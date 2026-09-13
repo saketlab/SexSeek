@@ -1,0 +1,317 @@
+alias	scientific_name
+aedes	Aedes aegypti
+aedes aegypti	Aedes aegypti
+dengue mosquito	Aedes aegypti
+yellow fever mosquito	Aedes aegypti
+anas platyrhynchos	Anas platyrhynchos
+anas platyrhynchos platyrhynchos	Anas platyrhynchos
+domestic duck	Anas platyrhynchos
+duck	Anas platyrhynchos
+mallard	Anas platyrhynchos
+pekin duck	Anas platyrhynchos
+anole	Anolis carolinensis
+anolis carolinensis	Anolis carolinensis
+carolina anole	Anolis carolinensis
+green anole	Anolis carolinensis
+african malaria mosquito	Anopheles gambiae
+anopheles	Anopheles gambiae
+anopheles gambiae	Anopheles gambiae
+malaria mosquito	Anopheles gambiae
+apis mellifera	Apis mellifera
+bee	Apis mellifera
+european honey bee	Apis mellifera
+honey bee	Apis mellifera
+honeybee	Apis mellifera
+western honey bee	Apis mellifera
+a. thaliana	Arabidopsis thaliana
+arabidopsis	Arabidopsis thaliana
+arabidopsis thaliana	Arabidopsis thaliana
+mouse-ear cress	Arabidopsis thaliana
+tair10	Arabidopsis thaliana
+thale cress	Arabidopsis thaliana
+b. mori	Bombyx mori
+bombyx mori	Bombyx mori
+domestic silk moth	Bombyx mori
+domestic silkworm	Bombyx mori
+silk moth	Bombyx mori
+silkworm	Bombyx mori
+b. taurus	Bos taurus
+bos indicus x bos taurus	Bos taurus
+bos taurus	Bos taurus
+bos taurus x bos indicus	Bos taurus
+bovine	Bos taurus
+bull	Bos taurus
+calf	Bos taurus
+cattle	Bos taurus
+cow	Bos taurus
+cows	Bos taurus
+domestic cattle	Bos taurus
+c. elegans	Caenorhabditis elegans
+caenorhabditis elegans	Caenorhabditis elegans
+cel	Caenorhabditis elegans
+celegans	Caenorhabditis elegans
+nematode	Caenorhabditis elegans
+roundworm	Caenorhabditis elegans
+worm	Caenorhabditis elegans
+c. jacchus	Callithrix jacchus
+callithrix jacchus	Callithrix jacchus
+common marmoset	Callithrix jacchus
+marmoset	Callithrix jacchus
+white-tufted-ear marmoset	Callithrix jacchus
+c. familiaris	Canis lupus familiaris
+canine	Canis lupus familiaris
+canis familiaris	Canis lupus familiaris
+canis lupus familiaris	Canis lupus familiaris
+dog	Canis lupus familiaris
+dogs	Canis lupus familiaris
+domestic dog	Canis lupus familiaris
+capra hircus	Capra hircus
+caprine	Capra hircus
+domestic goat	Capra hircus
+goat	Capra hircus
+goats	Capra hircus
+cavia porcellus	Cavia porcellus
+cavy	Cavia porcellus
+domestic guinea pig	Cavia porcellus
+guinea pig	Cavia porcellus
+african green monkey	Chlorocebus sabaeus
+chlorocebus aethiops	Chlorocebus sabaeus
+chlorocebus sabaeus	Chlorocebus sabaeus
+green monkey	Chlorocebus sabaeus
+vervet	Chlorocebus sabaeus
+vervet monkey	Chlorocebus sabaeus
+coturnix coturnix japonica	Coturnix japonica
+coturnix japonica	Coturnix japonica
+japanese quail	Coturnix japonica
+quail	Coturnix japonica
+chinese hamster	Cricetulus griseus
+cho	Cricetulus griseus
+cho cells	Cricetulus griseus
+cricetulus barabensis griseus	Cricetulus griseus
+cricetulus griseus	Cricetulus griseus
+d. rerio	Danio rerio
+danio rerio	Danio rerio
+danrer	Danio rerio
+zebra fish	Danio rerio
+zebrafish	Danio rerio
+zebrafish (danio rerio)	Danio rerio
+daphnia	Daphnia magna
+daphnia magna	Daphnia magna
+water flea	Daphnia magna
+d. melanogaster	Drosophila melanogaster
+dm6	Drosophila melanogaster
+dmel	Drosophila melanogaster
+drosophila	Drosophila melanogaster
+drosophila melanogaster	Drosophila melanogaster
+fly	Drosophila melanogaster
+fruit fly	Drosophila melanogaster
+fruitfly	Drosophila melanogaster
+vinegar fly	Drosophila melanogaster
+domestic horse	Equus caballus
+e. caballus	Equus caballus
+equine	Equus caballus
+equus caballus	Equus caballus
+horse	Equus caballus
+horses	Equus caballus
+e coli	Escherichia coli
+e. coli	Escherichia coli
+e. coli k-12	Escherichia coli
+ecoli	Escherichia coli
+escherichia coli	Escherichia coli
+escherichia coli bl21(de3)	Escherichia coli
+escherichia coli k-12	Escherichia coli
+escherichia coli k12	Escherichia coli
+escherichia coli str. k-12 substr. mg1655	Escherichia coli
+cat	Felis catus
+cats	Felis catus
+domestic cat	Felis catus
+feline	Felis catus
+felis catus	Felis catus
+felis silvestris catus	Felis catus
+chicken	Gallus gallus
+chickens	Gallus gallus
+fowl	Gallus gallus
+g. gallus	Gallus gallus
+gallus gallus	Gallus gallus
+gallus gallus domesticus	Gallus gallus
+hen	Gallus gallus
+red junglefowl	Gallus gallus
+rooster	Gallus gallus
+gasterosteus aculeatus	Gasterosteus aculeatus
+stickleback	Gasterosteus aculeatus
+three-spined stickleback	Gasterosteus aculeatus
+threespine stickleback	Gasterosteus aculeatus
+gorilla	Gorilla gorilla
+gorilla gorilla	Gorilla gorilla
+gorilla gorilla gorilla	Gorilla gorilla
+western gorilla	Gorilla gorilla
+western lowland gorilla	Gorilla gorilla
+heterocephalus glaber	Heterocephalus glaber
+naked mole rat	Heterocephalus glaber
+naked mole-rat	Heterocephalus glaber
+grch37	Homo sapiens
+grch38	Homo sapiens
+h. sapiens	Homo sapiens
+hg19	Homo sapiens
+hg38	Homo sapiens
+homo sapiens	Homo sapiens
+homo sapiens sapiens	Homo sapiens
+hsa	Homo sapiens
+hsapiens	Homo sapiens
+human	Homo sapiens
+humans	Homo sapiens
+man	Homo sapiens
+crab-eating macaque	Macaca fascicularis
+cynomolgus	Macaca fascicularis
+cynomolgus macaque	Macaca fascicularis
+cynomolgus monkey	Macaca fascicularis
+long-tailed macaque	Macaca fascicularis
+m. fascicularis	Macaca fascicularis
+macaca fascicularis	Macaca fascicularis
+m. mulatta	Macaca mulatta
+macaca mulatta	Macaca mulatta
+macaque	Macaca mulatta
+mmul	Macaca mulatta
+rhesus	Macaca mulatta
+rhesus macaque	Macaca mulatta
+rhesus monkey	Macaca mulatta
+domestic turkey	Meleagris gallopavo
+meleagris gallopavo	Meleagris gallopavo
+turkey	Meleagris gallopavo
+wild turkey	Meleagris gallopavo
+golden hamster	Mesocricetus auratus
+hamster	Mesocricetus auratus
+mesocricetus auratus	Mesocricetus auratus
+syrian hamster	Mesocricetus auratus
+microtus ochrogaster	Microtus ochrogaster
+prairie vole	Microtus ochrogaster
+vole	Microtus ochrogaster
+gray short-tailed opossum	Monodelphis domestica
+grey short-tailed opossum	Monodelphis domestica
+laboratory opossum	Monodelphis domestica
+m. domestica	Monodelphis domestica
+monodelphis domestica	Monodelphis domestica
+opossum	Monodelphis domestica
+grcm38	Mus musculus
+grcm39	Mus musculus
+house mouse	Mus musculus
+m. musculus	Mus musculus
+mice	Mus musculus
+mm10	Mus musculus
+mm39	Mus musculus
+mm9	Mus musculus
+mmu	Mus musculus
+mmusculus	Mus musculus
+mouse	Mus musculus
+mus	Mus musculus
+mus musculus	Mus musculus
+mus musculus castaneus	Mus musculus
+mus musculus domesticus	Mus musculus
+mus musculus domesticus x m. m. molossinus	Mus musculus
+mus musculus musculus	Mus musculus
+western european house mouse	Mus musculus
+domestic ferret	Mustela putorius furo
+ferret	Mustela putorius furo
+mustela furo	Mustela putorius furo
+mustela putorius furo	Mustela putorius furo
+african turquoise killifish	Nothobranchius furzeri
+killifish	Nothobranchius furzeri
+nothobranchius furzeri	Nothobranchius furzeri
+turquoise killifish	Nothobranchius furzeri
+oncorhynchus mykiss	Oncorhynchus mykiss
+rainbow trout	Oncorhynchus mykiss
+steelhead	Oncorhynchus mykiss
+trout	Oncorhynchus mykiss
+duck-billed platypus	Ornithorhynchus anatinus
+duckbill platypus	Ornithorhynchus anatinus
+ornithorhynchus anatinus	Ornithorhynchus anatinus
+platypus	Ornithorhynchus anatinus
+domestic rabbit	Oryctolagus cuniculus
+european rabbit	Oryctolagus cuniculus
+oryctolagus cuniculus	Oryctolagus cuniculus
+rabbit	Oryctolagus cuniculus
+rabbits	Oryctolagus cuniculus
+japanese medaka	Oryzias latipes
+japanese rice fish	Oryzias latipes
+medaka	Oryzias latipes
+oryzias latipes	Oryzias latipes
+domestic sheep	Ovis aries
+ewe	Ovis aries
+lamb	Ovis aries
+o. aries	Ovis aries
+ovine	Ovis aries
+ovis aries	Ovis aries
+ram	Ovis aries
+sheep	Ovis aries
+bonobo	Pan paniscus
+p. paniscus	Pan paniscus
+pan paniscus	Pan paniscus
+pygmy chimpanzee	Pan paniscus
+chimp	Pan troglodytes
+chimpanzee	Pan troglodytes
+common chimpanzee	Pan troglodytes
+p. troglodytes	Pan troglodytes
+pan troglodytes	Pan troglodytes
+anubis baboon	Papio anubis
+baboon	Papio anubis
+olive baboon	Papio anubis
+papio anubis	Papio anubis
+orang-utan	Pongo abelii
+orangutan	Pongo abelii
+pongo abelii	Pongo abelii
+pongo pygmaeus abelii	Pongo abelii
+sumatran orangutan	Pongo abelii
+brown rat	Rattus norvegicus
+norway rat	Rattus norvegicus
+r. norvegicus	Rattus norvegicus
+rat	Rattus norvegicus
+rats	Rattus norvegicus
+rattus norvegicus	Rattus norvegicus
+rn6	Rattus norvegicus
+rn7	Rattus norvegicus
+rno	Rattus norvegicus
+rnorvegicus	Rattus norvegicus
+baker's yeast	Saccharomyces cerevisiae
+bakers yeast	Saccharomyces cerevisiae
+brewer's yeast	Saccharomyces cerevisiae
+brewers yeast	Saccharomyces cerevisiae
+budding yeast	Saccharomyces cerevisiae
+s. cerevisiae	Saccharomyces cerevisiae
+sacce	Saccharomyces cerevisiae
+saccharomyces cerevisiae	Saccharomyces cerevisiae
+saccharomyces cerevisiae s288c	Saccharomyces cerevisiae
+saccharomyces cerevisiae w303	Saccharomyces cerevisiae
+yeast	Saccharomyces cerevisiae
+atlantic salmon	Salmo salar
+salmo salar	Salmo salar
+salmon	Salmo salar
+fission yeast	Schizosaccharomyces pombe
+pombe	Schizosaccharomyces pombe
+s. pombe	Schizosaccharomyces pombe
+schizosaccharomyces pombe	Schizosaccharomyces pombe
+boar	Sus scrofa
+domestic pig	Sus scrofa
+hog	Sus scrofa
+pig	Sus scrofa
+pigs	Sus scrofa
+s. scrofa	Sus scrofa
+sus scrofa	Sus scrofa
+sus scrofa domesticus	Sus scrofa
+swine	Sus scrofa
+wild boar	Sus scrofa
+australian zebra finch	Taeniopygia guttata
+taeniopygia castanotis	Taeniopygia guttata
+taeniopygia guttata	Taeniopygia guttata
+zebra finch	Taeniopygia guttata
+bottlenose dolphin	Tursiops truncatus
+common bottlenose dolphin	Tursiops truncatus
+dolphin	Tursiops truncatus
+tursiops truncatus	Tursiops truncatus
+african clawed frog	Xenopus laevis
+clawed frog	Xenopus laevis
+xenopus	Xenopus laevis
+xenopus laevis	Xenopus laevis
+silurana tropicalis	Xenopus tropicalis
+tropical clawed frog	Xenopus tropicalis
+western clawed frog	Xenopus tropicalis
+xenopus tropicalis	Xenopus tropicalis
