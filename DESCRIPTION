@@ -1,0 +1,27 @@
+Package: SexSeek
+Title: Estimate Genetic Sex from Expression Counts
+Version: 0.0.0.9000
+Authors@R:
+    person("Saket", "Choudhary", email = "saketc@iitb.ac.in", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-5202-7633"))
+Description: Calls genetic sex from bulk or single-cell expression counts using
+    sex-chromosome gene expression and X-inactivation markers. Works on a counts
+    matrix directly. 
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends:
+    R (>= 4.1)
+Imports:
+    Matrix,
+    methods,
+    utils
+Suggests:
+    genevintage (>= 0.1.1),
+    SeuratObject,
+    SingleCellExperiment,
+    SummarizedExperiment,
+    hdf5r,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.1.0
