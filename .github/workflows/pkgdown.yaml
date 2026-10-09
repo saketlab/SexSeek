@@ -1,0 +1,123 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "R/**"
+      - "man/**"
+      - "vignettes/**"
+      - "pkgdown/**"
+      - "_pkgdown.yml"
+      - "DESCRIPTION"
+      - "NEWS.md"
+      - "README*"
+      - ".github/workflows/pkgdown.yaml"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+name: pkgdown.yaml
+
+permissions: read-all
+
+jobs:
+  pkgdown:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pkgdown-${{ github.ref }}
+      cancel-in-progress: true
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::pkgdown, local::.
+          needs: website
+
+      - name: Build site
+        run: pkgdown::build_site(preview = FALSE, install = FALSE, new_process = FALSE)
+        shell: Rscript {0}
+
+      - name: The build has to have produced a landing page
+        run: test -f docs/index.html
+
+      - name: Make room for the new release
+        if: github.event_name != 'pull_request'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          script: |
+            set -e
+            mkdir -p /var/www/sexseek
+            cd /var/www/sexseek
+            rm -rf site-incoming
+            mkdir -p site-incoming releases
+
+      - name: Upload the built site
+        if: github.event_name != 'pull_request'
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          source: "docs/*"
+          target: /var/www/sexseek/site-incoming
+          strip_components: 1
+
+      # nginx serves /var/www/sexseek/site, a symlink; the swap is atomic, and a
+      # failed smoke test puts the previous release back.
+      - name: Swap it in
+        if: github.event_name != 'pull_request'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd /var/www/sexseek
+
+            test -f site-incoming/index.html || {
+              echo "::error::upload has no index.html; refusing to swap"
+              exit 1
+            }
+
+            release="releases/${{ github.sha }}-${{ github.run_id }}"
+            rm -rf "$release"
+            mv site-incoming "$release"
+
+            previous=$(readlink site || true)
+            ln -sfn "$release" site.new
+            mv -T site.new site
+
+            code=$(curl -sk -o /dev/null -w '%{http_code}' \
+                     --resolve sexseek.saketlab.org:443:127.0.0.1 \
+                     https://sexseek.saketlab.org/ || true)
+            if [ "$code" != "200" ]; then
+              if [ -n "$previous" ] && [ -d "$previous" ]; then
+                ln -sfn "$previous" site.new
+                mv -T site.new site
+                echo "::error::/ answered $code; rolled back to $previous"
+              else
+                echo "::error::/ answered $code and there is nothing to roll back to"
+              fi
+              exit 1
+            fi
+
+            live=$(readlink site)
+            for old in $(ls -1dt releases/*/ 2>/dev/null | tail -n +6); do
+              [ "${old%/}" = "$live" ] || rm -rf "$old"
+            done
+            echo "deployed $release"

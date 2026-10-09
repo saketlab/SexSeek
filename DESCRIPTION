@@ -9,7 +9,7 @@ Description: Infers the genetic sex of samples, donors or cells from bulk or
     matrices, delimited text files, 10x Genomics outputs, and 'Seurat', 
     'SingleCellExperiment' and 'SummarizedExperiment' objects.
 License: MIT + file LICENSE
-URL: https://github.com/saketlab/SexSeek
+URL: https://sexseek.saketlab.org, https://github.com/saketlab/SexSeek
 BugReports: https://github.com/saketlab/SexSeek/issues
 Encoding: UTF-8
 Language: en-GB
