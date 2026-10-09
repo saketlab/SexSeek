@@ -21,3 +21,16 @@ Expects \code{matrix.mtx}, a barcode file and a feature file, each optionally
 gzipped, as CellRanger writes them. \code{Matrix::readMM} does the parsing, so
 this costs no dependency beyond what the package already needs.
 }
+\examples{
+dir <- file.path(tempdir(), "tenx")
+dir.create(dir, showWarnings = FALSE)
+m <- Matrix::sparseMatrix(i = c(1, 2), j = c(1, 2), x = c(5, 3), dims = c(2, 2))
+Matrix::writeMM(m, file.path(dir, "matrix.mtx"))
+writeLines(
+  c("ENSG00000229807\tXIST", "ENSG00000012817\tKDM5D"),
+  file.path(dir, "features.tsv")
+)
+writeLines(c("AAAC-1", "AAAG-1"), file.path(dir, "barcodes.tsv"))
+Read10xDir(dir)
+unlink(dir, recursive = TRUE)
+}

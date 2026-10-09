@@ -7,8 +7,12 @@
 SexSpecies()
 }
 \value{
-A data frame with one row per species.
+A data frame with one row per species, including its
+sex-determination \code{system}, \code{heterogametic} sex and panel \code{status}.
 }
 \description{
 Supported species and their sex-determination systems
+}
+\examples{
+head(SexSpecies()[, c("scientific_name", "common_name", "system", "status")])
 }

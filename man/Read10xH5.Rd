@@ -10,7 +10,7 @@ Read10xH5(path, feature_column = c("id", "name"))
 \item{path}{Path to a \code{.h5} file.}
 
 \item{feature_column}{For v3 files, \code{"id"} for Ensembl identifiers or
-\code{"name"} for symbols. Identifiers are preferred — symbols cannot
+\code{"name"} for symbols. Identifiers are preferred; symbols cannot
 distinguish species.}
 }
 \value{
@@ -20,4 +20,22 @@ A sparse matrix with gene rownames and barcode colnames.
 Handles both the CellRanger v2 layout (a single named group holding the
 genome) and the v3 layout (a \code{matrix} group with a \code{features} subgroup).
 Needs the \code{hdf5r} package, which is a suggested dependency.
+}
+\examples{
+\dontshow{if (requireNamespace("hdf5r", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+path <- tempfile(fileext = ".h5")
+h5 <- hdf5r::H5File$new(path, mode = "w")
+g <- h5$create_group("matrix")
+g[["data"]] <- c(5L, 3L)
+g[["indices"]] <- c(0L, 1L)
+g[["indptr"]] <- c(0L, 1L, 2L)
+g[["shape"]] <- c(2L, 2L)
+g[["barcodes"]] <- c("AAAC-1", "AAAG-1")
+f <- g$create_group("features")
+f[["id"]] <- c("ENSG00000229807", "ENSG00000012817")
+f[["name"]] <- c("XIST", "KDM5D")
+h5$close_all()
+Read10xH5(path)
+unlink(path)
+\dontshow{\}) # examplesIf}
 }

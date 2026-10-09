@@ -16,8 +16,12 @@ A list with \code{species}, \code{confidence} (\code{high}, \code{medium}, \code
 nothing matched.
 }
 \description{
-Tries stable-ID prefixes first — they are unambiguous and cost one regex per
+Tries stable-ID prefixes first; they are unambiguous and cost one regex per
 species. Falls back to scoring the input symbols against each species' panel
 symbols, which is weaker: panels overlap heavily between close relatives, so
 the returned confidence is what tells you whether to trust it.
+}
+\examples{
+DetectSpecies(c("ENSMUSG00000086503", "ENSMUSG00000069045"))
+DetectSpecies(c("ENSG00000229807.13", "ENSG00000012817"))
 }

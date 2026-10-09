@@ -7,11 +7,16 @@
 GametologPairs()
 }
 \value{
-A data frame of pairs.
+A data frame with one row per pair: \code{scientific_name}, the Y and
+X gene IDs and symbols, and the panel tier of the Y gene.
 }
 \description{
 Each row pairs a Y gene with its X-linked homolog. Scoring uses complete
 pairs from the selected marker tier. A common library-size multiplier
 cancels in Y/(Y+X), but gene-specific capture, length, mapping and tissue
 effects remain. The resulting fraction requires empirical calibration.
+}
+\examples{
+gp <- GametologPairs()
+gp[gp$scientific_name == "Homo sapiens", c("y_gene_name", "x_gene_name")]
 }

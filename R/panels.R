@@ -34,7 +34,11 @@
 #' One row per sex-linked gene. `role` is one of `Y`, `X`, `W`, `Z`,
 #' `inactivation` (XIST, RSX) or `male_specific` (roX1, roX2).
 #'
-#' @return A data frame.
+#' @return A data frame with one row per gene and columns including
+#'   `scientific_name`, `gene_id`, `gene_name`, `chr`, `role` and `tier`.
+#' @examples
+#' panels <- SexPanels()
+#' table(panels$role)
 #' @export
 SexPanels <- function() {
   if (is.null(.cache$panels)) {
@@ -45,7 +49,10 @@ SexPanels <- function() {
 
 #' Supported species and their sex-determination systems
 #'
-#' @return A data frame with one row per species.
+#' @return A data frame with one row per species, including its
+#'   sex-determination `system`, `heterogametic` sex and panel `status`.
+#' @examples
+#' head(SexSpecies()[, c("scientific_name", "common_name", "system", "status")])
 #' @export
 SexSpecies <- function() {
   if (is.null(.cache$species)) {
@@ -66,13 +73,16 @@ SexSpecies <- function() {
 #'
 #' Defaults to the `core` tier, which is what scoring uses: a curated set of
 #' uniquely mappable, somatic-tissue markers. The full inventory carries every
-#' gene on the sex chromosomes and is far too permissive to call from —
+#' gene on the sex chromosomes and is far too permissive to call from:
 #' ampliconic and testis-restricted Y families in particular fire on tissue, not
 #' on genotype.
 #'
 #' @param species A scientific name, as it appears in [SexSpecies()].
 #' @param tier Which tiers to keep. `NULL` returns every row.
 #' @return A data frame of panel rows.
+#' @examples
+#' PanelFor("Homo sapiens")[, c("gene_name", "role", "tier")]
+#' PanelFor("Gallus gallus")[, c("gene_name", "role", "tier")]
 #' @export
 PanelFor <- function(species, tier = "core") {
   p <- SexPanels()
@@ -83,7 +93,7 @@ PanelFor <- function(species, tier = "core") {
   if (!is.null(tier)) {
     out <- out[out$tier %in% tier, , drop = FALSE]
   }
-  # `exclude` never contributes, whatever the caller asked for.
+  # exclude never contributes, whatever tier was asked for
   out[out$tier != "exclude", , drop = FALSE]
 }
 
@@ -105,7 +115,11 @@ PanelFor <- function(species, tier = "core") {
 #' cancels in Y/(Y+X), but gene-specific capture, length, mapping and tissue
 #' effects remain. The resulting fraction requires empirical calibration.
 #'
-#' @return A data frame of pairs.
+#' @return A data frame with one row per pair: `scientific_name`, the Y and
+#'   X gene IDs and symbols, and the panel tier of the Y gene.
+#' @examples
+#' gp <- GametologPairs()
+#' gp[gp$scientific_name == "Homo sapiens", c("y_gene_name", "x_gene_name")]
 #' @export
 GametologPairs <- function() {
   if (is.null(.cache$pairs)) {

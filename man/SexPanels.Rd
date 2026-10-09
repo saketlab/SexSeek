@@ -7,9 +7,14 @@
 SexPanels()
 }
 \value{
-A data frame.
+A data frame with one row per gene and columns including
+\code{scientific_name}, \code{gene_id}, \code{gene_name}, \code{chr}, \code{role} and \code{tier}.
 }
 \description{
 One row per sex-linked gene. \code{role} is one of \code{Y}, \code{X}, \code{W}, \code{Z},
 \code{inactivation} (XIST, RSX) or \code{male_specific} (roX1, roX2).
+}
+\examples{
+panels <- SexPanels()
+table(panels$role)
 }

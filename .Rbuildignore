@@ -5,3 +5,10 @@
 ^AGEND\.md$
 ^CLAUDE\.md$
 ^\.claude$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^.*\.Rproj$
+^\.Rproj\.user$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

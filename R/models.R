@@ -14,10 +14,11 @@
 
 #' Fitted logistic coefficients, one row per species per feature
 #'
-#' Empty until `data-raw/fit_models.R` has been run against the benchmark
-#' cohort. A species with no rows falls back to the ratio model.
+#' May be empty. A species with no rows falls back to the ratio model.
 #'
 #' @return A data frame with columns `scientific_name`, `feature`, `estimate`.
+#' @examples
+#' SexModels()
 #' @export
 SexModels <- function() {
   if (is.null(.cache$models)) {

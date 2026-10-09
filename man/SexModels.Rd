@@ -10,6 +10,8 @@ SexModels()
 A data frame with columns \code{scientific_name}, \code{feature}, \code{estimate}.
 }
 \description{
-Empty until \code{data-raw/fit_models.R} has been run against the benchmark
-cohort. A species with no rows falls back to the ratio model.
+May be empty. A species with no rows falls back to the ratio model.
+}
+\examples{
+SexModels()
 }

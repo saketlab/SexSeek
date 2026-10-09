@@ -1,0 +1,216 @@
+---
+title: "Introduction to SexSeek"
+description: >
+  How to use SexSeek on counts matrices.
+output:
+  rmarkdown::html_vignette:
+    fig_width: 6
+    fig_height: 4.5
+vignette: >
+  %\VignetteIndexEntry{Introduction to SexSeek}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = "#>",
+  dev = "png", dpi = 300, fig.retina = 1, out.width = "100%",
+  dev.args = c(if (capabilities("cairo")) list(type = "cairo"), list(family = "Arial"))
+)
+has_tx <- requireNamespace("genevintage", quietly = TRUE) &&
+  "aggregate_transcripts" %in% getNamespaceExports("genevintage")
+```
+
+```{r library}
+library(SexSeek)
+```
+
+Here we use `SexSeek` on a few public GEO datasets where the sex information is available per sample from the authors
+and fetched with [seqout](https://github.com/saketlab/seqout).
+
+```{r datasets}
+ExampleData()
+```
+
+## Bulk RNA-seq
+
+### Human, gene symbols
+
+Here we use [GSE199208](https://seqout.org/p/GSE199208), human submandibular gland, to check bulk counts where the matrix has gene symbols.
+
+```{r human-bulk}
+hb <- ExampleData("human_bulk")
+dim(hb$counts)
+
+hb_calls <- EstimateSex(hb$counts, species = hb$species, group = colnames(hb$counts))
+hb_cmp <- CompareSex(hb_calls, hb$recorded)
+hb_cmp[, c("unit", "verdict", "confidence", "recorded", "agrees")]
+table(recorded = hb_cmp$recorded_sex, call = hb_cmp$verdict)
+```
+
+```{r human-bulk-plot}
+PlotSexEvidence(hb_cmp, main = "GSE199208, human bulk")
+```
+
+### Mouse, Ensembl gene IDs
+
+Here we use [GSE85136](https://seqout.org/p/GSE85136), mouse nucleus accumbens with both sexes in every group, to check bulk counts where the matrix has Ensembl IDs.
+
+```{r mouse-bulk}
+mb <- ExampleData("mouse_bulk")
+mb_cmp <- CompareSex(
+  EstimateSex(mb$counts, species = mb$species, group = colnames(mb$counts)),
+  mb$recorded
+)
+table(recorded = mb_cmp$recorded_sex, call = mb_cmp$verdict)
+```
+
+```{r mouse-bulk-plot}
+PlotSexEvidence(mb_cmp, main = "GSE85136, mouse bulk")
+```
+
+### Mouse, transcript IDs
+
+Here we demonstrate how to use [genevintage](https://github.com/saketlab/genevintage) to first aggregate information at gene level.
+Samples are taken from [GSE232600](https://seqout.org/p/GSE232600), mouse parathyroid quantified with
+Salmon at the level of transcript IDs.
+
+```{r tx-build, eval = FALSE}
+map <- genevintage::transcript2gene(rownames(tx), species = "Mus musculus")
+genes <- genevintage::aggregate_transcripts(tx, mapping = map, unmapped = "keep")
+```
+
+
+```{r tx, eval = has_tx}
+mt <- ExampleData("mouse_tx")
+head(rownames(mt$counts))
+head(mt$tx2gene)
+
+genes <- genevintage::aggregate_transcripts(mt$counts,
+  mapping = mt$tx2gene, label = "id", unmapped = "keep", quiet = TRUE
+)
+dim(genes)
+
+mt_cmp <- CompareSex(
+  EstimateSex(genes, species = mt$species, group = colnames(genes)),
+  mt$recorded
+)
+mt_cmp[, c("unit", "verdict", "confidence", "recorded", "flags")]
+```
+
+No `Xist` transcript was quantified, so females are `uncertain`:
+
+```{r tx-notes, eval = has_tx}
+unique(mt_cmp$notes[mt_cmp$verdict == "uncertain"])
+```
+
+```{r tx-plot, eval = has_tx}
+PlotSexEvidence(mt_cmp, main = "GSE232600, mouse transcript level")
+```
+
+## Single-cell RNA-seq
+
+
+### Human
+
+Here we use [GSE196554](https://seqout.org/p/GSE196554), human skeletal muscle stem cells with one library per donor, to call sex per donor from single cells.
+
+```{r human-sc}
+hs <- ExampleData("human_sc")
+vapply(hs$counts, ncol, 1L) # cells per donor
+
+hs_cmp <- CompareSex(EstimateSex(hs$counts, species = hs$species), hs$recorded)
+table(recorded = hs_cmp$recorded_sex, call = hs_cmp$verdict)
+```
+
+```{r human-sc-plot}
+PlotSexEvidence(hs_cmp, main = "GSE196554, human single-cell (per donor)")
+```
+
+Females with `inact_frac` below 0.05 and no Y signal abstain.
+
+```{r human-sc-uncertain}
+hs_cmp[hs_cmp$verdict == "uncertain", c("unit", "inact_score", "inact_frac", "qc_score", "flags")]
+```
+
+Cells with any Y-marker count:
+
+```{r human-sc-cells, fig.height = 4}
+PlotCellFraction(hs$counts, hs$species, hs$recorded, main = "GSE196554, per donor")
+```
+
+### Mouse
+
+Here we use [GSE132420](https://seqout.org/p/GSE132420), mouse lacrimal gland from wild-type and Sjögren's model strains, to repeat the single-cell check in mouse.
+
+```{r mouse-sc}
+ms <- ExampleData("mouse_sc")
+ms_cmp <- CompareSex(EstimateSex(ms$counts, species = ms$species), ms$recorded)
+table(recorded = ms_cmp$recorded_sex, call = ms_cmp$verdict)
+```
+
+```{r mouse-sc-plot}
+PlotSexEvidence(ms_cmp, main = "GSE132420, mouse single-cell (per mouse)")
+```
+
+```{r mouse-sc-cells, fig.height = 4}
+PlotCellFraction(ms$counts, ms$species, ms$recorded, main = "GSE132420, per mouse")
+```
+
+## Species without XIST
+
+```{r species-status}
+s <- SexSpecies()
+s[
+  s$scientific_name %in% c("Homo sapiens", "Mus musculus", "Rattus norvegicus", "Danio rerio"),
+  c("scientific_name", "system", "inactivation_marker", "status")
+]
+```
+
+### Rat: males only
+
+Here we use [GSE100122](https://seqout.org/p/GSE100122), rat dorsal root ganglion, to show a
+species whose panel has no `Xist`: males are called and females are `uncertain`.
+
+```{r rat-bulk}
+rb <- ExampleData("rat_bulk")
+rb_cmp <- CompareSex(
+  EstimateSex(rb$counts, species = rb$species, group = colnames(rb$counts)),
+  rb$recorded
+)
+rb_cmp[, c("unit", "verdict", "confidence", "recorded", "flags")]
+```
+
+```{r rat-bulk-plot, fig.height = 4}
+PlotSexEvidence(rb_cmp, main = "GSE100122, rat bulk")
+```
+
+### Zebrafish: no panel
+
+Here we use [GSE123439](https://seqout.org/p/GSE123439), zebrafish gonads, to show a species
+with no panel. This is strain AB, a lab strain that has lost the differentiated
+sex chromosome, so every call is `unknown`.
+
+```{r zebrafish}
+zb <- ExampleData("zebrafish_bulk")
+dim(zb$counts)
+zb_cmp <- CompareSex(
+  EstimateSex(zb$counts, species = zb$species, group = colnames(zb$counts)),
+  zb$recorded
+)
+table(recorded = zb_cmp$recorded_sex, call = zb_cmp$verdict)
+unique(zb_cmp$notes)
+```
+
+## Summary
+
+```{r summary}
+cmps <- list("human bulk" = hb_cmp, "mouse bulk" = mb_cmp)
+if (has_tx) cmps[["mouse transcripts"]] <- mt_cmp
+cmps <- c(cmps, list(
+  "human single-cell" = hs_cmp, "mouse single-cell" = ms_cmp,
+  "rat bulk" = rb_cmp, "zebrafish bulk" = zb_cmp
+))
+SummariseComparison(cmps)
+```

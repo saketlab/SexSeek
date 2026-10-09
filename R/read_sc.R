@@ -9,14 +9,24 @@
 #'   CellRanger v3 writes id, symbol, type; column 1 is the Ensembl identifier,
 #'   which is what species detection and panel matching want.
 #' @return A sparse matrix with gene rownames and barcode colnames.
+#' @examples
+#' dir <- file.path(tempdir(), "tenx")
+#' dir.create(dir, showWarnings = FALSE)
+#' m <- Matrix::sparseMatrix(i = c(1, 2), j = c(1, 2), x = c(5, 3), dims = c(2, 2))
+#' Matrix::writeMM(m, file.path(dir, "matrix.mtx"))
+#' writeLines(
+#'   c("ENSG00000229807\tXIST", "ENSG00000012817\tKDM5D"),
+#'   file.path(dir, "features.tsv")
+#' )
+#' writeLines(c("AAAC-1", "AAAG-1"), file.path(dir, "barcodes.tsv"))
+#' Read10xDir(dir)
+#' unlink(dir, recursive = TRUE)
 #' @export
 Read10xDir <- function(dir, feature_column = 1L) {
   if (!dir.exists(dir)) {
     stop("Not a directory: ", dir, call. = FALSE)
   }
-  # GEO deposits prefix the triplet with the accession and a library id --
-  # `GSM9323718_6854-37_matrix.mtx.gz` -- so match on the suffix, not the whole
-  # name. Bare CellRanger output still matches.
+  # GEO prefixes names, e.g. GSM9323718_6854-37_matrix.mtx.gz
   mtx <- .pick_file(dir, "matrix\\.mtx(\\.gz)?$", "matrix.mtx")
   bar <- .pick_file(dir, "barcodes\\.tsv(\\.gz)?$", "barcodes.tsv")
   fea <- .pick_file(
@@ -32,9 +42,7 @@ Read10xDir <- function(dir, feature_column = 1L) {
   features <- .read_col(fea, feature_column)
   barcodes <- .read_col(bar, 1L)
 
-  # A dimension mismatch means the triplet is inconsistent — a partial download,
-  # or files from different runs mixed in one directory. Silently recycling
-  # names here would attach the wrong gene to every row.
+  # partial download or mixed runs; recycling names would mislabel every gene
   if (nrow(m) != length(features) || ncol(m) != length(barcodes)) {
     stop(
       "Triplet is inconsistent in ", dirname(mtx), ": matrix is ", nrow(m), "x", ncol(m),
@@ -43,8 +51,6 @@ Read10xDir <- function(dir, feature_column = 1L) {
       call. = FALSE
     )
   }
-  # CellRanger v2 wrote genes as rows; some deposits transpose. Trust the file
-  # counts rather than guessing from shape.
   rownames(m) <- features
   colnames(m) <- barcodes
   .check_matrix(m)
@@ -86,9 +92,24 @@ Read10xDir <- function(dir, feature_column = 1L) {
 #'
 #' @param path Path to a `.h5` file.
 #' @param feature_column For v3 files, `"id"` for Ensembl identifiers or
-#'   `"name"` for symbols. Identifiers are preferred — symbols cannot
+#'   `"name"` for symbols. Identifiers are preferred; symbols cannot
 #'   distinguish species.
 #' @return A sparse matrix with gene rownames and barcode colnames.
+#' @examplesIf requireNamespace("hdf5r", quietly = TRUE)
+#' path <- tempfile(fileext = ".h5")
+#' h5 <- hdf5r::H5File$new(path, mode = "w")
+#' g <- h5$create_group("matrix")
+#' g[["data"]] <- c(5L, 3L)
+#' g[["indices"]] <- c(0L, 1L)
+#' g[["indptr"]] <- c(0L, 1L, 2L)
+#' g[["shape"]] <- c(2L, 2L)
+#' g[["barcodes"]] <- c("AAAC-1", "AAAG-1")
+#' f <- g$create_group("features")
+#' f[["id"]] <- c("ENSG00000229807", "ENSG00000012817")
+#' f[["name"]] <- c("XIST", "KDM5D")
+#' h5$close_all()
+#' Read10xH5(path)
+#' unlink(path)
 #' @export
 Read10xH5 <- function(path, feature_column = c("id", "name")) {
   .need("hdf5r", "read a 10x HDF5 file")
@@ -100,8 +121,7 @@ Read10xH5 <- function(path, feature_column = c("id", "name")) {
   root <- if ("matrix" %in% names(h5)) "matrix" else names(h5)[1]
   g <- h5[[root]]
 
-  # v3 nests feature metadata under `features`; v2 keeps `genes`/`gene_names`
-  # beside the data. Both carry the same CSC arrays.
+  # v3 nests features; v2 keeps genes and gene_names beside the data
   ids <- if ("features" %in% names(g)) {
     key <- if (feature_column == "id") "id" else "name"
     g[["features"]][[key]]$read()

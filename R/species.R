@@ -4,8 +4,7 @@
 #' about which form they carry.
 #' @noRd
 .strip_version <- function(x) {
-  # Dotted clone-based symbols (AL627309.1, AL627309.5) are distinct genes.
-  # Only Ensembl stable gene/transcript/protein IDs carry this version syntax.
+  # only Ensembl IDs; dotted clone symbols like AL627309.1 are distinct genes
   sub("^(ENS[A-Z]*[GTP][0-9]+)\\.[0-9]+$", "\\1", x, ignore.case = TRUE)
 }
 
@@ -19,6 +18,10 @@
 #'
 #' @param name A species name.
 #' @return The scientific name, or `NULL` if unrecognised.
+#' @examples
+#' ResolveSpecies("mouse")
+#' ResolveSpecies("CHICKEN")
+#' ResolveSpecies("Danio rerio")
 #' @export
 ResolveSpecies <- function(name) {
   if (is.null(name) || !nzchar(name)) {
@@ -42,7 +45,7 @@ ResolveSpecies <- function(name) {
 
 #' Detect species from gene identifiers or symbols
 #'
-#' Tries stable-ID prefixes first — they are unambiguous and cost one regex per
+#' Tries stable-ID prefixes first; they are unambiguous and cost one regex per
 #' species. Falls back to scoring the input symbols against each species' panel
 #' symbols, which is weaker: panels overlap heavily between close relatives, so
 #' the returned confidence is what tells you whether to trust it.
@@ -52,6 +55,9 @@ ResolveSpecies <- function(name) {
 #' @return A list with `species`, `confidence` (`high`, `medium`, `low`) and
 #'   `method` (`id_prefix`, `symbol`, or `none`). `species` is `NULL` when
 #'   nothing matched.
+#' @examples
+#' DetectSpecies(c("ENSMUSG00000086503", "ENSMUSG00000069045"))
+#' DetectSpecies(c("ENSG00000229807.13", "ENSG00000012817"))
 #' @export
 DetectSpecies <- function(features) {
   features <- features[!is.na(features) & nzchar(features)]
@@ -61,20 +67,15 @@ DetectSpecies <- function(features) {
 
   ids <- .strip_version(features)
   s <- SexSpecies()
-  # The registry stores an absent prefix as the literal text "NA". Left in, it
-  # matches every human symbol beginning NA — NACA, NAMPT, NAA10 — and calls
-  # honey bee. Anything under four characters is likewise a symbol magnet.
+  # literal "NA" and short prefixes match symbols like NACA and call honey bee
   s <- s[!is.na(s$id_prefix) & nzchar(s$id_prefix) & s$id_prefix != "NA" &
     nchar(s$id_prefix) >= 4, , drop = FALSE]
 
-  # Longest prefix first: ENSMUSG must win over any shorter prefix it contains.
+  # longest first so ENSMUSG beats any shorter prefix it contains
   s <- s[order(-nchar(s$id_prefix)), , drop = FALSE]
   for (i in seq_len(nrow(s))) {
     n <- sum(startsWith(ids, s$id_prefix[i]))
-    # Both a fraction and a count. A count alone is satisfied by coincidence at
-    # scale: a 20,000-row human symbol matrix contains eleven genes starting
-    # AGAP, which was enough to call the mosquito. A real identifier matrix has
-    # the prefix on nearly every row.
+    # a count alone lets human symbols like AGAP call mosquito
     if (n >= 0.2 * length(ids) && n >= min(10L, length(ids))) {
       return(list(
         species = s$scientific_name[i], confidence = "high",
@@ -102,11 +103,7 @@ DetectSpecies <- function(features) {
   by_sp <- split(.norm_symbol(p$gene_name), p$scientific_name)
   sizes <- vapply(by_sp, function(x) length(unique(x)), integer(1))
 
-  # A panel too small to be distinctive cannot identify anything: quail's W is
-  # five genes, so a couple of coincidental symbol matches would score 0.4 and
-  # beat a human matrix matching half of a two-thousand-gene panel. Raw hit
-  # count has the opposite bias, so require both a decent fraction and a floor
-  # on the panel itself.
+  # tiny panels score high by coincidence
   MIN_PANEL <- 50L
   usable <- sizes >= MIN_PANEL
   if (!any(usable)) {
@@ -116,8 +113,7 @@ DetectSpecies <- function(features) {
   sizes <- sizes[usable]
 
   hits <- vapply(by_sp, function(x) sum(unique(x) %in% syms), integer(1))
-  # An absolute floor as well: a handful of matches is coincidence at any panel
-  # size, and symbols like ZFX or KDM5C are shared across most vertebrates.
+  # ZFX, KDM5C and similar are shared across most vertebrates
   if (max(hits) < 10L) {
     return(list(species = NULL, confidence = "low", method = "none"))
   }
@@ -127,21 +123,13 @@ DetectSpecies <- function(features) {
   best <- names(frac)[ord[1]]
   margin <- if (length(frac) > 1) frac[ord[1]] - frac[ord[2]] else frac[ord[1]]
 
-  # Sex-linked symbols are conserved: the X carries near-identical symbols
-  # across mammals, so human symbols score 0.44 against the naked mole-rat panel
-  # and 0.40 against pig. In practice no mammal is separable from another this
-  # way. Rather than return a plausible-looking wrong species, refuse — the
-  # caller can pass `species` explicitly, and a wrong species silently inverts
-  # or invalidates every downstream call.
+  # mammal X symbols are near-identical across species; refuse
   if (!(frac[ord[1]] >= 0.5 && margin >= 0.15)) {
     return(list(species = NULL, confidence = "low", method = "ambiguous"))
   }
   conf <- "medium"
 
-  # A close call between two species of the SAME system is cheap to get wrong —
-  # human versus chimp gives the same verdict either way. A close call across
-  # systems is not: mistaking chicken (ZW, female heterogametic) for mouse (XY)
-  # inverts every result. Refuse rather than guess.
+  # a close call across XY and ZW inverts every result
   if (length(ord) > 1 && margin < 0.15) {
     sys <- .system_of(names(frac)[ord[1:2]])
     if (!anyNA(sys) && sys[1] != sys[2]) {

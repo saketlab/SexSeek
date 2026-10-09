@@ -72,7 +72,7 @@ EstimateSex.SummarizedExperiment <- EstimateSex.SingleCellExperiment
 
 #' Resolve `group` against object metadata.
 #'
-#' A length-one `group` naming a metadata column is the common case — users say
+#' A length-one `group` naming a metadata column is the common case; users say
 #' `group = "donor"`, not `group = obj$donor`. A longer vector is taken as the
 #' grouping itself.
 #' @noRd

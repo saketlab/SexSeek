@@ -1,0 +1,32 @@
+template:
+  bootstrap: 5
+  light-switch: true
+  preset: default
+  bslib:
+    primary: "#c07828"
+    secondary: "#6b7689"
+    body-bg: "#f8f7f9"
+    body-color: "#171923"
+    border-color: "#dcdae0"
+    border-radius: "6px"
+    font-size-base: "1rem"
+    headings-font-weight: "700"
+    base_font: {google: "Albert Sans"}
+    heading_font: {google: "Albert Sans"}
+    code_font: {google: "JetBrains Mono"}
+  includes:
+    in_header: |
+      <script>
+        (function(){
+          var stored = localStorage.getItem('bs-color-scheme');
+          if (!stored) {
+            stored = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-bs-theme', stored);
+        })();
+      </script>
+
+navbar:
+  structure:
+    left:  [intro, reference, articles]
+    right: [search, github, lightswitch]

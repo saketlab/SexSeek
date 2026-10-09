@@ -10,27 +10,22 @@
 #' @noRd
 .thresholds <- list(
   min_marker_genes = 2L,
-  # A shared library-size multiplier cancels in Y/(Y+X). Gene-specific
-  # effective lengths, capture efficiencies, mapping and tissue effects do not.
-  # This pooled fraction is expression-weighted, not an average of pair ratios.
+  # library size cancels in Y/(Y+X); gene length, capture and tissue effects do not
   min_gametolog_frac = 0.05,
-  # XIST relative to the X partners is bounded but still assay/tissue dependent.
-  # Both ratios share an X reference and are not statistically independent.
+  # shares the X reference with the gametolog fraction, so not independent
   min_inact_frac = 0.05,
-  # Kept only as a floor against a few stray counts, never as the decision rule.
+  # floor against stray counts
   min_cpm = 1,
   min_total_counts = 1000,
-  # Probability bands for the logistic model. The gap between them is an
-  # abstain zone, not a decision boundary: a unit landing there is genuinely
-  # ambiguous and gets `uncertain` rather than whichever side of 0.5 it fell.
+  # the gap between p_low and p_high abstains as uncertain
   p_high = 0.90,
   p_low = 0.10
 )
 
 #' Estimate genetic sex from expression counts
 #'
-#' Scores two complementary lines of evidence — expression of sex-specific
-#' chromosome markers, and expression of the X-inactivation marker — and reports
+#' Scores two complementary lines of evidence, expression of sex-specific
+#' chromosome markers and expression of the X-inactivation marker, and reports
 #' the state they jointly imply. It does not force a male/female answer.
 #'
 #' Absence of Y signal is **not** evidence of female: loss of Y in aged male
@@ -40,7 +35,7 @@
 #' available and the honest answer is `uncertain`.
 #'
 #' For single-cell input the default is to aggregate, and the biological unit is
-#' the **donor**, not the library — pass `group` for anything that may hold more
+#' the **donor**, not the library. Pass `group` for anything that may hold more
 #' than one donor. A male cell can carry zero Y UMIs through dropout alone, and
 #' ambient RNA in a mixed-sex run carries Y transcripts into female droplets,
 #' which is a direct false-male mechanism. `per_cell = TRUE` is therefore
@@ -57,10 +52,10 @@
 #' @param per_cell Report one row per column instead of aggregating.
 #' @param model Which model settles the male/female question. `"ratio"` uses
 #'   marker detection and normalised expression directly and is always
-#'   available. `"logistic"` uses coefficients fitted per species by
-#'   `data-raw/fit_models.R`, and falls back to `"ratio"` for any species that
-#'   has none. Structural decisions — insufficient depth, both signals present,
-#'   no inactivation marker in the panel — are made before either model runs.
+#'   available. `"logistic"` uses coefficients fitted per species (see
+#'   [SexModels()]), and falls back to `"ratio"` for any species that has
+#'   none. Structural decisions (insufficient depth, both signals present,
+#'   no inactivation marker in the panel) are made before either model runs.
 #' @param ... Passed to methods.
 #' @param input_scale `"auto"` checks every stored value for fractional counts;
 #'   `"counts"` requires integer-like values; `"normalised"` explicitly declares
@@ -73,8 +68,21 @@
 #'   zero-expression genes. Curated markers absent from it are excluded.
 #' @return A data frame, one row per unit, with verdict, heuristic confidence,
 #'   marker CPM, gametolog and inactivation fractions, depth and diagnostic flags.
-#'   Confidence categories are not calibrated probabilities. `per_cell = TRUE`
+#'   Confidence categories are not calibrated probabilities. `inact_measured`
+#'   is `FALSE` when the species panel has no inactivation marker or the input
+#'   lacks its row; `inact_score` is then 0 without being measured. `per_cell = TRUE`
 #'   adds `per_cell_unvalidated` and caps confidence at medium.
+#' @examples
+#' path <- system.file("extdata", "example_counts.tsv.gz", package = "SexSeek")
+#'
+#' # A file path works directly; species is detected from the gene IDs.
+#' # Without `group` the whole matrix is one unit: two donors mixed.
+#' EstimateSex(path)[, c("unit", "verdict", "flags")]
+#'
+#' # One unit per sample.
+#' counts <- as.matrix(read.delim(path, row.names = 1))
+#' res <- EstimateSex(counts, group = colnames(counts))
+#' res[, c("unit", "verdict", "confidence", "gametolog_frac", "inact_frac")]
 #' @export
 EstimateSex <- function(x, ...) UseMethod("EstimateSex")
 
@@ -119,32 +127,50 @@ EstimateSex.character <- function(x, ...) {
       call. = FALSE
     )
   }
-  sp <- .resolve_or_detect(species, rownames(m))
-  reg <- if (is.null(sp$species)) NULL else .species_row(sp$species)
-
+  s <- .scoring_setup(rownames(m), species, annotation)
   units <- .unit_index(m, group, per_cell)
-
-  if (is.null(reg)) {
-    return(.unknown_frame(
-      units, sp$species, NA_character_, "unrecognised",
-      "Species could not be determined from the gene identifiers."
+  if (!is.null(s$reason)) {
+    return(.unknown_frame(units, s$species, s$system, s$reason, s$note))
+  }
+  reg <- s$reg
+  panel <- s$panel
+  annotation <- s$annotation
+  excluded <- sum(is.na(panel$gene_id))
+  result <- .score_units(m, units, panel, reg, model, annotation,
+    looks_normalised = input_scale == "normalised" || fractional
+  )
+  if (excluded > 0L) {
+    result <- .cap_flag(result, "annotation_markers_missing")
+    result$notes <- trimws(paste(
+      result$notes, excluded,
+      "curated marker(s) absent or ambiguous in the supplied annotation."
     ))
+  }
+  if (per_cell) result <- .cap_flag(result, "per_cell_unvalidated")
+  result
+}
+
+#' Registry row and (annotated) scoring panel, or why scoring cannot run
+#' @noRd
+.scoring_setup <- function(features, species, annotation = NULL) {
+  sp <- .resolve_or_detect(species, features)
+  reg <- if (is.null(sp$species)) NULL else .species_row(sp$species)
+  give_up <- function(reason, note) {
+    list(
+      species = reg$scientific_name %||% sp$species,
+      system = reg$system %||% NA_character_, reason = reason, note = note
+    )
+  }
+  if (is.null(reg)) {
+    return(give_up("unrecognised", "Species could not be determined from the gene identifiers."))
   }
   if (identical(reg$status, "unsupported")) {
-    return(.unknown_frame(
-      units, reg$scientific_name, reg$system, "unsupported",
-      if (nzchar(reg$notes %||% "")) reg$notes else "Species is not supported."
-    ))
+    return(give_up("unsupported", if (nzchar(reg$notes %||% "")) reg$notes else "Species is not supported."))
   }
-
   panel <- .scoring_panel(reg$scientific_name)
   if (is.null(panel)) {
-    return(.unknown_frame(
-      units, reg$scientific_name, reg$system, "no_panel",
-      "No usable marker tier for this species."
-    ))
+    return(give_up("no_panel", "No usable marker tier for this species."))
   }
-
   annotation <- .prepare_annotation(annotation, reg$scientific_name)
   if (!is.null(annotation)) {
     chr <- ifelse(panel$role %in% c("inactivation", "male_specific"),
@@ -152,26 +178,16 @@ EstimateSex.character <- function(x, ...) {
     )
     panel <- .annotate_markers(panel, annotation, chr)
   }
-  excluded <- sum(is.na(panel$gene_id))
-  result <- .score_units(m, units, panel, reg, model, annotation,
-    looks_normalised = input_scale == "normalised" || fractional
-  )
-  if (excluded > 0L) {
-    result$confidence[result$confidence == "high"] <- "medium"
-    result$flags <- vapply(result$flags, function(f) {
-      paste(c(f[nzchar(f)], "annotation_markers_missing"), collapse = ";")
-    }, character(1))
-    result$notes <- trimws(paste(
-      result$notes, excluded,
-      "curated marker(s) absent or ambiguous in the supplied annotation."
-    ))
-  }
-  if (per_cell) {
-    result$confidence[result$confidence == "high"] <- "medium"
-    result$flags <- vapply(result$flags, function(f) {
-      paste(c(f[nzchar(f)], "per_cell_unvalidated"), collapse = ";")
-    }, character(1))
-  }
+  list(reg = reg, panel = panel, annotation = annotation)
+}
+
+#' Cap high confidence at medium and append `flag`
+#' @noRd
+.cap_flag <- function(result, flag) {
+  result$confidence[result$confidence == "high"] <- "medium"
+  result$flags <- vapply(result$flags, function(f) {
+    paste(c(f[nzchar(f)], flag), collapse = ";")
+  }, character(1))
   result
 }
 
@@ -199,10 +215,7 @@ EstimateSex.character <- function(x, ...) {
 #' and its gametolog references describe the same evidence set.
 #' @noRd
 .scoring_panel <- function(species) {
-  # A species can be in the registry and absent from the panel — the registry
-  # deliberately carries `unsupported` rows so the package can explain itself,
-  # and some assemblies have no sex chromosome to build from. That is a reason
-  # to return `unknown`, not to raise an error.
+  # registry species without a panel return unknown, not an error
   all_p <- SexPanels()
   p <- all_p[all_p$scientific_name == species, , drop = FALSE]
   if (nrow(p) == 0) {
@@ -210,12 +223,18 @@ EstimateSex.character <- function(x, ...) {
   }
   for (tier in c("core", "secondary")) {
     keep <- p[p$tier == tier, , drop = FALSE]
-    # Needs sex-specific markers; an X-only tier cannot call anything.
+    # an X-only tier cannot call anything
     if (any(keep$role %in% c("Y", "W", "male_specific", "inactivation"))) {
       return(keep)
     }
   }
   NULL
+}
+
+#' @noRd
+.specific_panel <- function(panel, system) {
+  roles <- if (identical(system, "ZW")) "W" else c("Y", "male_specific")
+  panel[panel$role %in% roles, , drop = FALSE]
 }
 
 #' Map panel genes onto matrix rows.
@@ -273,23 +292,17 @@ EstimateSex.character <- function(x, ...) {
   split(seq_len(n), factor(group))
 }
 
+#' Rows of `features` that scoring reads
+#'
+#' `spec` and `inact` are deduplicated row indices; `iy` and `ix` hold one
+#' entry per gametolog pair, `NA` when unmatched.
 #' @noRd
-.score_units <- function(m, units, panel, reg, model, annotation = NULL,
-                         looks_normalised = .looks_normalised(m)) {
-  # Which markers carry the sex-specific signal depends on the system: the Y in
-  # XY species, the W in ZW species, where the heterogametic sex is female.
-  specific_roles <- if (identical(reg$system, "ZW")) "W" else c("Y", "male_specific")
-  spec <- panel[panel$role %in% specific_roles, , drop = FALSE]
+.scoring_rows <- function(features, panel, reg, annotation = NULL) {
+  spec <- .specific_panel(panel, reg$system)
   inact <- panel[panel$role == "inactivation", , drop = FALSE]
-
-  i_spec <- .match_rows(rownames(m), spec)
-  i_inact <- .match_rows(rownames(m), inact)
-
-  # Gametolog partners, for the scale-free statistic. Only XY species have them;
-  # a ZW or unpaired species falls back to detection plus the CPM floor.
+  # only XY species have pairs; others fall back to detection plus the CPM floor
   gp <- GametologPairs()
-  gp <- gp[gp$scientific_name == reg$scientific_name, , drop = FALSE]
-  gp <- gp[gp$y_tier %in% unique(panel$tier), , drop = FALSE]
+  gp <- gp[gp$scientific_name == reg$scientific_name & gp$y_tier %in% panel$tier, , drop = FALSE]
   yp <- .annotate_markers(data.frame(
     gene_id = gp$y_gene_id, gene_name = gp$y_gene_name,
     stringsAsFactors = FALSE
@@ -298,43 +311,44 @@ EstimateSex.character <- function(x, ...) {
     gene_id = gp$x_gene_id, gene_name = gp$x_gene_name,
     stringsAsFactors = FALSE
   ), annotation, rep("X", nrow(gp)))
-  iy <- .match_marker_rows(rownames(m), yp)
-  ix <- .match_marker_rows(rownames(m), xp)
+  list(
+    spec = .match_rows(features, spec), inact = .match_rows(features, inact),
+    iy = .match_marker_rows(features, yp), ix = .match_marker_rows(features, xp)
+  )
+}
+
+#' @noRd
+.score_units <- function(m, units, panel, reg, model, annotation = NULL,
+                         looks_normalised = .looks_normalised(m)) {
+  r <- .scoring_rows(rownames(m), panel, reg, annotation)
+  i_spec <- r$spec
+  i_inact <- r$inact
+  iy <- r$iy
+  ix <- r$ix
   complete <- !is.na(iy) & !is.na(ix) & iy != ix
   n_pairs <- sum(complete)
   i_gy <- unique(iy[complete])
   i_gx <- unique(ix[complete])
-  # XIST's X reference remains usable when a Y row has been filtered out.
+  # X reference survives a filtered-out Y row
   i_xref <- unique(ix[!is.na(ix)])
   n_matched <- length(i_spec) + length(i_inact)
 
-  # A filtered matrix that dropped the XIST row is not the same thing as a
-  # species with no XIST annotated. The first is a fixable input problem, the
-  # second is a permanent limit. Conflating them tells the user the wrong story
-  # and hides a recoverable mistake.
-  species_has_inact <- nrow(inact) > 0
+  # XIST filtered from the matrix is fixable; XIST absent from the species is not
+  species_has_inact <- any(panel$role == "inactivation")
   matrix_has_inact <- length(i_inact) > 0
 
-  # The heterogametic sex is the one carrying the sex-specific chromosome.
   coefs <- if (identical(model, "logistic")) {
     .coefs_for(reg$scientific_name)
   } else {
     NULL
   }
 
-  # Fractional expression may be normalised or estimated counts. Its scale
-  # cannot be established from values alone; cap confidence as a heuristic.
-
   het <- if (identical(reg$heterogametic, "female")) "female" else "male"
   homo <- if (het == "male") "female" else "male"
-  # Without an inactivation marker there is no positive evidence for the
-  # homogametic sex, only absence of the other — which is not evidence.
-  can_call_homo <- matrix_has_inact
 
   out <- lapply(names(units), function(u) {
     cols <- units[[u]]
-    # Missing autosomal values are omitted from the library total. Missing
-    # diagnostic measurements trigger abstention below, never negative evidence.
+    # missing diagnostic values abstain below
     total <- sum(Matrix::colSums(m[, cols, drop = FALSE], na.rm = TRUE),
       na.rm = TRUE
     )
@@ -343,12 +357,10 @@ EstimateSex.character <- function(x, ...) {
     inact_cpm <- .cpm(m, i_inact, cols, total)
     n_spec <- .n_detected(m, i_spec, cols)
 
-    # Y / (Y + X) over the matched gametolog pairs. Scale-free by construction.
     gy <- if (length(i_gy)) sum(m[i_gy, cols, drop = FALSE], na.rm = TRUE) else 0
     gx <- if (length(i_gx)) sum(m[i_gx, cols, drop = FALSE], na.rm = TRUE) else 0
     gfrac <- if (length(i_gy) && (gy + gx) > 0) gy / (gy + gx) else NA_real_
 
-    # Same construction for the inactivation side, against the same X reference.
     inact_ct <- if (length(i_inact)) {
       sum(m[i_inact, cols, drop = FALSE], na.rm = TRUE)
     } else {
@@ -365,7 +377,8 @@ EstimateSex.character <- function(x, ...) {
       gfrac = gfrac, ifrac = ifrac, n_pairs = n_pairs,
       spec_cpm = spec_cpm, inact_cpm = inact_cpm, n_spec = n_spec,
       n_spec_panel = length(i_spec), total = total,
-      can_call_homo = can_call_homo, het = het, homo = homo,
+      # homogametic calls need an inactivation marker
+      can_call_homo = matrix_has_inact, het = het, homo = homo,
       species_has_inact = species_has_inact,
       missing_marker_values = anyNA(m[unique(c(i_spec, i_inact, i_gy, i_xref)),
         cols,
@@ -385,6 +398,8 @@ EstimateSex.character <- function(x, ...) {
       inact_frac = if (is.null(f$ifrac)) NA_real_ else f$ifrac,
       n_gametolog_pairs = n_pairs,
       y_score = spec_cpm, inact_score = inact_cpm,
+      # inact_score is 0 here without being measured
+      inact_measured = matrix_has_inact,
       qc_score = total, n_y_core_detected = n_spec,
       n_panel_genes_matched = n_matched,
       flags = call$flags, notes = call$notes,
@@ -425,11 +440,7 @@ EstimateSex.character <- function(x, ...) {
     )
   }
 
-  # --- Structural gates. No model runs until these pass. ------------------
-  # These are facts about the data and the panel, not judgements a classifier
-  # can improve on. A logistic model is binary and cannot express "both signals
-  # present" or "this species has no female evidence available at all", so
-  # letting it run first would erase exactly the states we care about.
+  # structural gates run first; a binary model cannot express these states
   if (isTRUE(f$missing_marker_values)) {
     return(out(
       "unknown", "low", "missing_marker_values",
@@ -440,9 +451,7 @@ EstimateSex.character <- function(x, ...) {
     return(out("unknown", "low", "low_depth", "Too few counts to call."))
   }
 
-  # The gametolog fraction decides when it is available; the CPM floor is only a
-  # guard against a handful of stray counts. Where no pairs matched (ZW species,
-  # or a matrix missing the X partners) fall back to detection alone.
+  # no matched pairs (ZW, or X partners missing): detection alone
   spec_pos <- if (!is.na(f$gfrac)) {
     f$n_spec >= .thresholds$min_marker_genes &&
       f$spec_cpm >= .thresholds$min_cpm &&
@@ -451,7 +460,6 @@ EstimateSex.character <- function(x, ...) {
     f$n_spec >= .thresholds$min_marker_genes &&
       f$spec_cpm >= .thresholds$min_cpm
   }
-  # Use the X reference where available and retain the CPM floor on both paths.
   inact_pos <- f$can_call_homo && if (!is.na(f$ifrac)) {
     f$inact_cpm >= .thresholds$min_cpm &&
       f$ifrac >= .thresholds$min_inact_frac
@@ -466,7 +474,7 @@ EstimateSex.character <- function(x, ...) {
     ))
   }
 
-  # --- Model. Settles het vs homo within what the gates left. -------------
+  # model settles het vs homo within what the gates left
   if (identical(model, "logistic")) {
     if (is.null(coefs)) {
       r <- .decide_ratio(f, spec_pos, inact_pos)
@@ -512,8 +520,7 @@ EstimateSex.character <- function(x, ...) {
   }
   if (!f$can_call_homo) {
     if (isTRUE(f$species_has_inact)) {
-      # Recoverable: the marker exists for this species but is absent from the
-      # supplied matrix, usually because gene filtering dropped a lncRNA.
+      # usually gene filtering dropped the lncRNA
       return(out(
         "uncertain", "low", "inactivation_marker_missing_from_input",
         paste0(
@@ -551,9 +558,7 @@ EstimateSex.character <- function(x, ...) {
     return(out(f$het, "high", "", ""))
   }
   if (p <= .thresholds$p_low) {
-    # A low P(heterogametic) is only positive evidence for the other sex when
-    # that sex can be evidenced at all. Without an inactivation marker it just
-    # means "no Y seen", which is not the same thing.
+    # without an inactivation marker, low P only means no Y seen
     if (!f$can_call_homo) {
       flag <- if (isTRUE(f$species_has_inact)) {
         "inactivation_marker_missing_from_input"
@@ -584,7 +589,7 @@ EstimateSex.character <- function(x, ...) {
     system = system, panel_status = flag, verdict = "unknown",
     confidence = "low", model = NA_character_, p_heterogametic = NA_real_,
     gametolog_frac = NA_real_, inact_frac = NA_real_, n_gametolog_pairs = 0L,
-    y_score = NA_real_, inact_score = NA_real_,
+    y_score = NA_real_, inact_score = NA_real_, inact_measured = FALSE,
     qc_score = NA_real_, n_y_core_detected = NA_integer_,
     n_panel_genes_matched = 0L, flags = flag, notes = note,
     stringsAsFactors = FALSE
@@ -619,8 +624,7 @@ EstimateSex.character <- function(x, ...) {
   cap <- 3L
   extra <- character()
 
-  # An experimental panel is orthology guesswork plus assembly accident, not a
-  # calibrated marker set.
+  # experimental panels are uncalibrated orthology guesses
   if (!identical(reg$status, "validated")) {
     cap <- min(cap, 2L)
     extra <- c(extra, "experimental_panel")
@@ -629,7 +633,7 @@ EstimateSex.character <- function(x, ...) {
     cap <- min(cap, 2L)
     extra <- c(extra, "normalised_input")
   }
-  # Scoring on one marker row is one mismap away from a wrong call.
+  # one marker row is one mismap from a wrong call
   if (isTRUE(f$n_spec_panel <= 1)) {
     cap <- min(cap, 2L)
     extra <- c(extra, "thin_panel_match")

@@ -29,3 +29,15 @@ Returns a chromosome inventory, not a diagnostic marker panel. Pass the
 result to \code{EstimateSex(annotation = ...)} to reconcile curated markers
 against this annotation. Fetch once and reuse across datasets.
 }
+\examples{
+\dontshow{if (requireNamespace("genevintage", quietly = TRUE)) withAutoprint(\{ # examplesIf}
+# A local mapping avoids any download.
+mapping <- data.frame(
+  id = c("ENSG00000229807", "ENSG00000012817", "ENSG00000075624"),
+  name = c("XIST", "KDM5D", "ACTB"),
+  chr = c("X", "Y", "7"),
+  biotype = c("lncRNA", "protein_coding", "protein_coding")
+)
+SexChromosomeGenes("human", mapping = mapping)
+\dontshow{\}) # examplesIf}
+}

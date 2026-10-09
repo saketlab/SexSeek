@@ -46,7 +46,7 @@
     ),
     stop("Unsupported file extension '.", ext, "'.", call. = FALSE)
   )
-  # An .rds can hold anything, so send it back round the generic.
+  # an .rds can hold any supported object
   if (ext == "rds") .as_counts(obj, assay = assay, ...) else obj
 }
 
@@ -108,8 +108,7 @@
   if (anyNA(features) || any(!nzchar(trimws(features)))) {
     stop("Gene identifiers must not be missing or empty.", call. = FALSE)
   }
-  # Matching ignores case for symbols and numeric version suffixes. Reject
-  # collisions under the same rules rather than silently selecting a row.
+  # reject collisions under the same normalisation
   keys <- .norm_symbol(.strip_version(features))
   if (anyDuplicated(keys)) {
     stop("Duplicate or ambiguous gene identifiers. Supply unique gene IDs; ",

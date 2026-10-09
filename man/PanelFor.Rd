@@ -17,7 +17,11 @@ A data frame of panel rows.
 \description{
 Defaults to the \code{core} tier, which is what scoring uses: a curated set of
 uniquely mappable, somatic-tissue markers. The full inventory carries every
-gene on the sex chromosomes and is far too permissive to call from —
+gene on the sex chromosomes and is far too permissive to call from:
 ampliconic and testis-restricted Y families in particular fire on tissue, not
 on genotype.
+}
+\examples{
+PanelFor("Homo sapiens")[, c("gene_name", "role", "tier")]
+PanelFor("Gallus gallus")[, c("gene_name", "role", "tier")]
 }

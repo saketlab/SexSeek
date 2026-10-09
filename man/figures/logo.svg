@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1154.7" width="1000" height="1155">
+  <!-- Frame matches genevintage: regular pointy-top hex touching the canvas,
+       sharp corners, border 34/1155 of the height (inner hex = outer x 0.932). -->
+  <path fill="#3D4862" d="M500 0 1000 288.68V866.03L500 1154.7 0 866.03V288.68Z"/>
+  <path fill="#1B2232" d="M500 39.26 966 308.31V846.39L500 1115.44 34 846.39V308.31Z"/>
+
+  <g fill="none" stroke-linecap="round">
+    <!-- X chromosome -->
+    <g stroke="#F4A6B4" stroke-width="72">
+      <line x1="216" y1="430" x2="384" y2="700"/>
+      <line x1="384" y1="430" x2="216" y2="700"/>
+    </g>
+    <!-- Y chromosome, under the lens -->
+    <g stroke="#8FD3F4" stroke-width="60">
+      <line x1="650" y1="575" x2="596" y2="497"/>
+      <line x1="650" y1="575" x2="704" y2="497"/>
+      <line x1="650" y1="575" x2="650" y2="670"/>
+    </g>
+    <circle cx="650" cy="580" r="168" stroke="#E9ECF2" stroke-width="30"/>
+    <line x1="772" y1="702" x2="852" y2="782" stroke="#E9ECF2" stroke-width="54"/>
+  </g>
+
+  <!-- Centromeres -->
+  <circle cx="300" cy="565" r="15" fill="#1B2232"/>
+  <circle cx="650" cy="575" r="12" fill="#1B2232"/>
+
+  <text x="500" y="938" text-anchor="middle" fill="#E9ECF2"
+        font-family="Helvetica, Arial, sans-serif" font-size="128" font-weight="800"
+        letter-spacing="1">SexSeek</text>
+</svg>

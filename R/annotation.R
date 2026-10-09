@@ -10,6 +10,15 @@
 #' @param mapping Optional local annotation with `id`, `name`, `chr`, `biotype`
 #'   columns. Supplying this avoids downloads.
 #' @return A data frame with `id`, `name`, `chr`, and `biotype` columns.
+#' @examplesIf requireNamespace("genevintage", quietly = TRUE)
+#' # A local mapping avoids any download.
+#' mapping <- data.frame(
+#'   id = c("ENSG00000229807", "ENSG00000012817", "ENSG00000075624"),
+#'   name = c("XIST", "KDM5D", "ACTB"),
+#'   chr = c("X", "Y", "7"),
+#'   biotype = c("lncRNA", "protein_coding", "protein_coding")
+#' )
+#' SexChromosomeGenes("human", mapping = mapping)
 #' @export
 SexChromosomeGenes <- function(species, release = NULL, assembly = NULL,
                                source = NULL, mapping = NULL) {

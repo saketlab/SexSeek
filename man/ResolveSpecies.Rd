@@ -16,3 +16,8 @@ The scientific name, or \code{NULL} if unrecognised.
 Accepts a scientific name, a common name, or any alias in the shipped alias
 table, in any case.
 }
+\examples{
+ResolveSpecies("mouse")
+ResolveSpecies("CHICKEN")
+ResolveSpecies("Danio rerio")
+}
