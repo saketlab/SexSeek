@@ -125,58 +125,9 @@ test_that("ZW species invert: the sex-specific chromosome means female", {
   expect_gt(nrow(w), 0)
 })
 
-test_that("logistic falls back to ratio when no model is fitted", {
-  skip_if(nrow(SexModels()) > 0, "a fitted model now exists")
-  r <- EstimateSex(synth(y = 50), model = "logistic")
-  expect_equal(r$verdict, "male")
-  expect_equal(r$model, "ratio")
-  expect_true(grepl("no_fitted_model", r$flags))
-})
-
-test_that("structural gates run before either model", {
-  # Both signals present is a structural state; no classifier gets to overrule
-  # it, because a binary model cannot represent it at all.
-  for (mod in c("ratio", "logistic")) {
-    r <- EstimateSex(synth(y = 50, xist = 200), model = mod)
-    expect_equal(r$verdict, "possible_mixed")
-  }
-})
-
-test_that("fitted coefficients drive the logistic call", {
-  # Inject a model rather than waiting on calibration: a large positive weight
-  # on Y expression must produce a male call, and flipping its sign must not
-  # produce a female call for a species that has an inactivation marker only
-  # via the structural path.
-  fake <- data.frame(
-    scientific_name = "Homo sapiens",
-    feature = SexSeek:::.model_features,
-    estimate = c(-20, 5, 0, 0, 0, 0),
-    stringsAsFactors = FALSE
-  )
-  old <- SexSeek:::.cache$models
-  on.exit(assign("models", old, envir = SexSeek:::.cache), add = TRUE)
-  assign("models", fake, envir = SexSeek:::.cache)
-
-  r <- EstimateSex(synth(y = 50), model = "logistic")
-  expect_equal(r$model, "logistic")
-  expect_equal(r$verdict, "male")
-  expect_gt(r$p_heterogametic, 0.9)
-})
-
-test_that("the abstain band returns uncertain, not the nearer class", {
-  fake <- data.frame(
-    scientific_name = "Homo sapiens",
-    feature = SexSeek:::.model_features,
-    estimate = c(0.3, 0, 0, 0, 0, 0), # p ~ 0.57, inside the band
-    stringsAsFactors = FALSE
-  )
-  old <- SexSeek:::.cache$models
-  on.exit(assign("models", old, envir = SexSeek:::.cache), add = TRUE)
-  assign("models", fake, envir = SexSeek:::.cache)
-
-  r <- EstimateSex(synth(y = 50), model = "logistic")
-  expect_equal(r$verdict, "uncertain")
-  expect_equal(r$flags, "abstain_band")
+test_that("both signals present is possible_mixed", {
+  r <- EstimateSex(synth(y = 50, xist = 200))
+  expect_equal(r$verdict, "possible_mixed")
 })
 
 test_that("a registry species with no panel returns unknown, not an error", {

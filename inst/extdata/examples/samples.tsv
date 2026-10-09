@@ -1,0 +1,96 @@
+dataset	sample	title	recorded_as
+human_bulk	GSM5966687	Submandibular Gland 01 bulk	M
+human_bulk	GSM5966688	Submandibular Gland 02 bulk	M
+human_bulk	GSM5966689	Submandibular Gland 03 bulk	M
+human_bulk	GSM5966690	Submandibular Gland 04 bulk	M
+human_bulk	GSM5966691	Submandibular Gland 05 bulk	M
+human_bulk	GSM5966692	Submandibular Gland 06 bulk	M
+human_bulk	GSM5966693	Submandibular Gland 07 bulk	M
+human_bulk	GSM5966694	Submandibular Gland 08 bulk	F
+human_bulk	GSM5966695	Submandibular Gland 09 bulk	F
+human_bulk	GSM5966696	Submandibular Gland 10 bulk	F
+human_bulk	GSM5966697	Submandibular Gland 11 bulk	F
+human_bulk	GSM5966698	Submandibular Gland 12 bulk	M
+human_bulk	GSM5966699	Submandibular Gland 13 bulk	M
+human_bulk	GSM5966700	Submandibular Gland 14 bulk	M
+human_bulk	GSM5966701	Submandibular Gland 15 bulk	F
+mouse_bulk	GSM2258228	CRE Female 1	Female
+mouse_bulk	GSM2258229	CRE Female 2	Female
+mouse_bulk	GSM2258230	CRE Female 3	Female
+mouse_bulk	GSM2258231	CRE Male 1	Male
+mouse_bulk	GSM2258232	CRE Male 2	Male
+mouse_bulk	GSM2258233	CRE Male 3	Male
+mouse_bulk	GSM2258234	GFP Female 1	Female
+mouse_bulk	GSM2258235	GFP Female 2	Female
+mouse_bulk	GSM2258236	GFP Female 3	Female
+mouse_bulk	GSM2258237	GFP Male 1	Male
+mouse_bulk	GSM2258238	GFP Male 2	Male
+mouse_bulk	GSM2258239	GFP Male 3	Male
+mouse_bulk	GSM2258240	Control Female 1	Female
+mouse_bulk	GSM2258241	Control Female 2	Female
+mouse_bulk	GSM2258242	Control Female 3	Female
+mouse_bulk	GSM2258243	Control Male 1	Male
+mouse_bulk	GSM2258244	Control Male 2	Male
+mouse_bulk	GSM2258245	Control Male 3	Male
+mouse_bulk	GSM2258246	Stress Female 1	Female
+mouse_bulk	GSM2258247	Stress Female 2	Female
+mouse_bulk	GSM2258248	Stress Female 3	Female
+mouse_bulk	GSM2258249	Stress Male 1	Male
+mouse_bulk	GSM2258250	Stress Male 2	Male
+mouse_bulk	GSM2258251	Stress Male 3	Male
+rat_bulk	GSM2671558	Male_Naive_rep1	Male
+rat_bulk	GSM2671559	Male_Naive_rep2	Male
+rat_bulk	GSM2671560	Male_CCI_rep1	Male
+rat_bulk	GSM2671561	Male_CCI_rep2	Male
+rat_bulk	GSM2671562	Female_Naive_rep1	Female
+rat_bulk	GSM2671563	Female_Naive_rep2	Female
+rat_bulk	GSM2671564	Female_CCI_rep1	Female
+rat_bulk	GSM2671565	Female_CCI_rep2	Female
+zebrafish_bulk	GSM3503269	EM_low_male_R1	Male
+zebrafish_bulk	GSM3503270	EM_low_male_R2	Male
+zebrafish_bulk	GSM3503271	EM_low_female_R1	Female
+zebrafish_bulk	GSM3503272	EM_low_female_R2	Female
+zebrafish_bulk	GSM3503273	EM_middle_male_R1	Male
+zebrafish_bulk	GSM3503274	EM_middle_male_R2	Male
+zebrafish_bulk	GSM3503275	EM_middle_female_R1	Female
+zebrafish_bulk	GSM3503276	EM_middle_female_R2	Female
+zebrafish_bulk	GSM3503277	EM_high_male_R1	Male
+zebrafish_bulk	GSM3503278	EM_high_male_R2	Male
+zebrafish_bulk	GSM3503279	EM_high_female_R1	Female
+zebrafish_bulk	GSM3503280	EM_high_female_R2	Female
+zebrafish_bulk	GSM3503281	control_male_R1	Male
+zebrafish_bulk	GSM3503282	control_male_R2	Male
+zebrafish_bulk	GSM3503283	control_female_R1	Female
+zebrafish_bulk	GSM3503284	control_female_R2	Female
+human_sc	GSM5889068	Vastus Lateralis 20M	male
+human_sc	GSM5889069	Pectoralis Major 21F	female
+human_sc	GSM5889070	Pectoralis Major 40F	female
+human_sc	GSM5889071	Vastus Lateralis 52M	male
+human_sc	GSM5889072	Vastus Lateralis 55M	male
+human_sc	GSM5889073	Rectus Abdominis 56F	female
+human_sc	GSM5889074	Vastus Lateralis 57F	female
+human_sc	GSM5889075	Rectus Abdominis 59F	female
+human_sc	GSM5889076	Vastus Lateralis 66M	male
+human_sc	GSM5889077	Vastus Lateralis 73M	male
+human_sc	GSM5889078	Vastus Lateralis 83M	male
+human_sc	GSM5889079	Gastrocnemius 87F	female
+mouse_sc	GSM3863114	JH43_WT_female_lacrimal_scRNAseq_R1	Female
+mouse_sc	GSM3863115	JH44_MRL_lpr_female_lacrimal_scRNAseq_R1	Female
+mouse_sc	GSM3863116	JH45_WT_female_lacrimal_scRNAseq_R2	Female
+mouse_sc	GSM3863117	JH46_MRL_lpr_female_lacrimal_scRNAseq_R2	Female
+mouse_sc	GSM3863118	JH47_WT_male_lacrimal_scRNAseq_R1	Male
+mouse_sc	GSM3863119	JH48_NOD.H2b_male_lacrimal_scRNAseq_R1	Male
+mouse_sc	GSM3863120	JH49_WT_male_lacrimal_scRNAseq_R2	Male
+mouse_sc	GSM3863121	JH50_NOD.H2b_male_lacrimal_scRNAseq_R2	Male
+mouse_sc	GSM3863122	JH55_WT_male_lacrimal_scRNAseq_R3	Male
+mouse_sc	GSM3863123	JH56_WT_female_lacrimal_scRNAseq_R3	Female
+mouse_sc	GSM3863124	JH57_WT_male_lacrimal_scRNAseq_R4	Male
+mouse_sc	GSM3863125	JH58_WT_female_lacrimal_scRNAseq_R4	Female
+mouse_tx	GSM7359815	Control PTG cells, Experiment 1, biological replicate 1	male
+mouse_tx	GSM7359816	Control PTG cells, Experiment 1, biological replicate 2	male
+mouse_tx	GSM7359817	Control PTG cells, Experiment 1, biological replicate 3	male
+mouse_tx	GSM7359818	Control PTG cells, Experiment 1, biological replicate 4	male
+mouse_tx	GSM7359843	Control PTG cells, Experiment 2, biological replicate 1	female
+mouse_tx	GSM7359844	Control PTG cells, Experiment 2, biological replicate 2	female
+mouse_tx	GSM7359845	Control PTG cells, Experiment 2, biological replicate 3	female
+mouse_tx	GSM7359846	Control PTG cells, Experiment 2, biological replicate 4	female

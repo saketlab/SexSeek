@@ -19,7 +19,6 @@ EstimateSex(x, ...)
   species = NULL,
   group = NULL,
   per_cell = FALSE,
-  model = c("ratio", "logistic"),
   annotation = NULL,
   input_scale = c("auto", "counts", "normalised"),
   ...
@@ -33,7 +32,6 @@ EstimateSex(x, ...)
   group = NULL,
   per_cell = FALSE,
   assay = NULL,
-  model = c("ratio", "logistic"),
   annotation = NULL,
   input_scale = c("auto", "counts", "normalised"),
   ...
@@ -45,7 +43,6 @@ EstimateSex(x, ...)
   group = NULL,
   per_cell = FALSE,
   assay = "counts",
-  model = c("ratio", "logistic"),
   annotation = NULL,
   input_scale = c("auto", "counts", "normalised"),
   ...
@@ -57,7 +54,6 @@ EstimateSex(x, ...)
   group = NULL,
   per_cell = FALSE,
   assay = "counts",
-  model = c("ratio", "logistic"),
   annotation = NULL,
   input_scale = c("auto", "counts", "normalised"),
   ...
@@ -77,13 +73,6 @@ treating the whole matrix as one unit.}
 
 \item{species}{Species name, scientific or common. Detected from the gene
 identifiers when \code{NULL}.}
-
-\item{model}{Which model settles the male/female question. \code{"ratio"} uses
-marker detection and normalised expression directly and is always
-available. \code{"logistic"} uses coefficients fitted per species (see
-\code{\link[=SexModels]{SexModels()}}), and falls back to \code{"ratio"} for any species that has
-none. Structural decisions (insufficient depth, both signals present,
-no inactivation marker in the panel) are made before either model runs.}
 
 \item{annotation}{Optional sex-chromosome table from \code{\link[=SexChromosomeGenes]{SexChromosomeGenes()}},
 or \code{"genevintage"} to fetch the newest annotation for the resolved species.

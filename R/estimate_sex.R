@@ -16,10 +16,7 @@
   min_inact_frac = 0.05,
   # floor against stray counts
   min_cpm = 1,
-  min_total_counts = 1000,
-  # the gap between p_low and p_high abstains as uncertain
-  p_high = 0.90,
-  p_low = 0.10
+  min_total_counts = 1000
 )
 
 #' Estimate genetic sex from expression counts
@@ -50,12 +47,6 @@
 #'   of `ncol(x)` or the name of a column in the object's metadata. Defaults to
 #'   treating the whole matrix as one unit.
 #' @param per_cell Report one row per column instead of aggregating.
-#' @param model Which model settles the male/female question. `"ratio"` uses
-#'   marker detection and normalised expression directly and is always
-#'   available. `"logistic"` uses coefficients fitted per species (see
-#'   [SexModels()]), and falls back to `"ratio"` for any species that has
-#'   none. Structural decisions (insufficient depth, both signals present,
-#'   no inactivation marker in the panel) are made before either model runs.
 #' @param ... Passed to methods.
 #' @param input_scale `"auto"` checks every stored value for fractional counts;
 #'   `"counts"` requires integer-like values; `"normalised"` explicitly declares
@@ -89,14 +80,12 @@ EstimateSex <- function(x, ...) UseMethod("EstimateSex")
 #' @rdname EstimateSex
 #' @export
 EstimateSex.default <- function(x, species = NULL, group = NULL,
-                                per_cell = FALSE, model = c("ratio", "logistic"),
-                                annotation = NULL,
+                                per_cell = FALSE, annotation = NULL,
                                 input_scale = c("auto", "counts", "normalised"), ...) {
   m <- .as_counts(x, ...)
   .estimate_on_matrix(m,
     species = species, group = group, per_cell = per_cell,
-    model = match.arg(model), annotation = annotation,
-    input_scale = match.arg(input_scale)
+    annotation = annotation, input_scale = match.arg(input_scale)
   )
 }
 
@@ -119,8 +108,7 @@ EstimateSex.character <- function(x, ...) {
 #' The one place the call is actually made. Every method funnels here.
 #' @noRd
 .estimate_on_matrix <- function(m, species, group, per_cell,
-                                model = "ratio", annotation = NULL,
-                                input_scale = "auto") {
+                                annotation = NULL, input_scale = "auto") {
   fractional <- .looks_normalised(m)
   if (input_scale == "counts" && fractional) {
     stop("`input_scale = 'counts'` requires integer-like counts; fractional values found.",
@@ -136,7 +124,7 @@ EstimateSex.character <- function(x, ...) {
   panel <- s$panel
   annotation <- s$annotation
   excluded <- sum(is.na(panel$gene_id))
-  result <- .score_units(m, units, panel, reg, model, annotation,
+  result <- .score_units(m, units, panel, reg, annotation,
     looks_normalised = input_scale == "normalised" || fractional
   )
   if (excluded > 0L) {
@@ -318,7 +306,7 @@ EstimateSex.character <- function(x, ...) {
 }
 
 #' @noRd
-.score_units <- function(m, units, panel, reg, model, annotation = NULL,
+.score_units <- function(m, units, panel, reg, annotation = NULL,
                          looks_normalised = .looks_normalised(m)) {
   r <- .scoring_rows(rownames(m), panel, reg, annotation)
   i_spec <- r$spec
@@ -336,12 +324,6 @@ EstimateSex.character <- function(x, ...) {
   # XIST filtered from the matrix is fixable; XIST absent from the species is not
   species_has_inact <- any(panel$role == "inactivation")
   matrix_has_inact <- length(i_inact) > 0
-
-  coefs <- if (identical(model, "logistic")) {
-    .coefs_for(reg$scientific_name)
-  } else {
-    NULL
-  }
 
   het <- if (identical(reg$heterogametic, "female")) "female" else "male"
   homo <- if (het == "male") "female" else "male"
@@ -385,15 +367,13 @@ EstimateSex.character <- function(x, ...) {
         drop = FALSE
       ])
     )
-    call <- .decide(f, model, coefs)
+    call <- .decide(f)
     call <- .cap(call, reg, looks_normalised, f)
 
     data.frame(
       unit = u, species = reg$scientific_name, system = reg$system,
       panel_status = reg$status, verdict = call$verdict,
       confidence = call$confidence,
-      model = call$model,
-      p_heterogametic = call$p,
       gametolog_frac = if (is.null(f$gfrac)) NA_real_ else f$gfrac,
       inact_frac = if (is.null(f$ifrac)) NA_real_ else f$ifrac,
       n_gametolog_pairs = n_pairs,
@@ -432,15 +412,12 @@ EstimateSex.character <- function(x, ...) {
 #' Both signals present is an unresolved biological state, including possible
 #' mixtures. Neither present is not evidence for the homogametic sex.
 #' @noRd
-.decide <- function(f, model, coefs) {
-  out <- function(verdict, confidence, flags, notes, m = "ratio", p = NA_real_) {
-    list(
-      verdict = verdict, confidence = confidence, flags = flags,
-      notes = notes, model = m, p = p
-    )
+.decide <- function(f) {
+  out <- function(verdict, confidence, flags, notes) {
+    list(verdict = verdict, confidence = confidence, flags = flags, notes = notes)
   }
 
-  # structural gates run first; a binary model cannot express these states
+  # structural gates run first
   if (isTRUE(f$missing_marker_values)) {
     return(out(
       "unknown", "low", "missing_marker_values",
@@ -474,32 +451,6 @@ EstimateSex.character <- function(x, ...) {
     ))
   }
 
-  # model settles het vs homo within what the gates left
-  if (identical(model, "logistic")) {
-    if (is.null(coefs)) {
-      r <- .decide_ratio(f, spec_pos, inact_pos)
-      r$flags <- paste(
-        c(r$flags[nzchar(r$flags)], "no_fitted_model"),
-        collapse = ";"
-      )
-      r$notes <- trimws(paste(
-        r$notes,
-        "No fitted model for this species; fell back to the ratio model."
-      ))
-      return(r)
-    }
-    result <- .decide_logistic(f, coefs)
-    # A fitted probability cannot manufacture positive biological evidence.
-    unsupported_call <- (result$verdict == f$het && !spec_pos) ||
-      (result$verdict == f$homo && !inact_pos)
-    if (unsupported_call) {
-      result$verdict <- "uncertain"
-      result$confidence <- "low"
-      result$flags <- "model_without_positive_evidence"
-      result$notes <- "Model prediction lacks the required positive marker evidence."
-    }
-    return(result)
-  }
   .decide_ratio(f, spec_pos, inact_pos)
 }
 
@@ -507,10 +458,7 @@ EstimateSex.character <- function(x, ...) {
 #' @noRd
 .decide_ratio <- function(f, spec_pos, inact_pos) {
   out <- function(verdict, confidence, flags, notes) {
-    list(
-      verdict = verdict, confidence = confidence, flags = flags,
-      notes = notes, model = "ratio", p = NA_real_
-    )
+    list(verdict = verdict, confidence = confidence, flags = flags, notes = notes)
   }
   if (spec_pos) {
     return(out(f$het, "high", "", ""))
@@ -544,50 +492,13 @@ EstimateSex.character <- function(x, ...) {
   )
 }
 
-#' Fitted logistic rule, with an abstain band rather than a 0.5 cut.
-#' @noRd
-.decide_logistic <- function(f, coefs) {
-  p <- .p_het(f, coefs)
-  out <- function(verdict, confidence, flags, notes) {
-    list(
-      verdict = verdict, confidence = confidence, flags = flags,
-      notes = notes, model = "logistic", p = p
-    )
-  }
-  if (p >= .thresholds$p_high) {
-    return(out(f$het, "high", "", ""))
-  }
-  if (p <= .thresholds$p_low) {
-    # without an inactivation marker, low P only means no Y seen
-    if (!f$can_call_homo) {
-      flag <- if (isTRUE(f$species_has_inact)) {
-        "inactivation_marker_missing_from_input"
-      } else {
-        "no_inactivation_marker"
-      }
-      return(out(
-        "uncertain", "low", flag,
-        paste0(
-          "Low P(", f$het, "), but no inactivation marker is available, so ",
-          f$homo, " cannot be called positively."
-        )
-      ))
-    }
-    return(out(f$homo, "high", "", ""))
-  }
-  out(
-    "uncertain", "medium", "abstain_band",
-    paste0("P(", f$het, ") = ", signif(p, 3), " falls in the abstain band.")
-  )
-}
-
 #' @noRd
 .unknown_frame <- function(units, species, system, flag, note) {
   data.frame(
     unit = names(units),
     species = if (is.null(species)) NA_character_ else species,
     system = system, panel_status = flag, verdict = "unknown",
-    confidence = "low", model = NA_character_, p_heterogametic = NA_real_,
+    confidence = "low",
     gametolog_frac = NA_real_, inact_frac = NA_real_, n_gametolog_pairs = 0L,
     y_score = NA_real_, inact_score = NA_real_, inact_measured = FALSE,
     qc_score = NA_real_, n_y_core_detected = NA_integer_,

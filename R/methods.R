@@ -4,7 +4,6 @@
 #' @export
 EstimateSex.Seurat <- function(x, species = NULL, group = NULL,
                                per_cell = FALSE, assay = NULL,
-                               model = c("ratio", "logistic"),
                                annotation = NULL,
                                input_scale = c("auto", "counts", "normalised"), ...) {
   .need("SeuratObject", "read a Seurat object")
@@ -43,7 +42,7 @@ EstimateSex.Seurat <- function(x, species = NULL, group = NULL,
   .estimate_on_matrix(
     .check_matrix(m), species,
     .group_from(group, x[[]], colnames(m)), per_cell,
-    model = match.arg(model), annotation = annotation,
+    annotation = annotation,
     input_scale = match.arg(input_scale)
   )
 }
@@ -52,7 +51,6 @@ EstimateSex.Seurat <- function(x, species = NULL, group = NULL,
 #' @export
 EstimateSex.SingleCellExperiment <- function(x, species = NULL, group = NULL,
                                              per_cell = FALSE, assay = "counts",
-                                             model = c("ratio", "logistic"),
                                              annotation = NULL,
                                              input_scale = c("auto", "counts", "normalised"), ...) {
   .need("SummarizedExperiment", "read a SingleCellExperiment")
@@ -61,7 +59,7 @@ EstimateSex.SingleCellExperiment <- function(x, species = NULL, group = NULL,
   .estimate_on_matrix(
     .check_matrix(m), species,
     .group_from(group, meta, colnames(m)), per_cell,
-    model = match.arg(model), annotation = annotation,
+    annotation = annotation,
     input_scale = match.arg(input_scale)
   )
 }

@@ -40,14 +40,13 @@ test_that("only complete core gametolog pairs contribute to the ratio", {
   expect_true(is.na(r$gametolog_frac))
 })
 
-test_that("SummarizedExperiment forwards annotation and model", {
+test_that("SummarizedExperiment forwards annotation", {
   skip_if_not_installed("SummarizedExperiment")
   m <- paired_counts()
   a <- annotation_fixture()
   a$id <- paste0("CUSTOM_", seq_len(nrow(a)))
   rownames(m)[seq_len(nrow(a))] <- a$id
   se <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = m))
-  r <- EstimateSex(se, species = "human", annotation = a, model = "logistic")
+  r <- EstimateSex(se, species = "human", annotation = a)
   expect_equal(r$verdict, "male")
-  expect_match(r$flags, "no_fitted_model")
 })

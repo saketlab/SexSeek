@@ -46,7 +46,7 @@ test_that("two independent W markers have female polarity in the decision table"
     spec_cpm = 1000, inact_cpm = 0, can_call_homo = FALSE,
     het = "female", homo = "male", species_has_inact = FALSE
   )
-  expect_equal(SexSeek:::.decide(f, "ratio", NULL)$verdict, "female")
+  expect_equal(SexSeek:::.decide(f)$verdict, "female")
   f$n_spec <- 0L
-  expect_equal(SexSeek:::.decide(f, "ratio", NULL)$verdict, "uncertain")
+  expect_equal(SexSeek:::.decide(f)$verdict, "uncertain")
 })

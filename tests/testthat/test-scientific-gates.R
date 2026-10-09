@@ -24,25 +24,6 @@ test_that("missing diagnostic values cause abstention rather than false negative
   expect_equal(EstimateSex(m, species = "human")$verdict, "unknown")
 })
 
-test_that("a fitted model requires positive evidence for either sex", {
-  old <- SexSeek:::.cache$models
-  on.exit(assign("models", old, envir = SexSeek:::.cache), add = TRUE)
-  m <- paired_counts()
-  m[, ] <- 0
-  m["AUTOSOME", ] <- 1e5
-  for (intercept in c(-20, 20)) {
-    fake <- data.frame(
-      scientific_name = "Homo sapiens",
-      feature = SexSeek:::.model_features,
-      estimate = c(intercept, 0, 0, 0, 0, 0)
-    )
-    assign("models", fake, envir = SexSeek:::.cache)
-    r <- EstimateSex(m, species = "human", model = "logistic")
-    expect_equal(r$verdict, "uncertain")
-    expect_equal(r$flags, "model_without_positive_evidence")
-  }
-})
-
 test_that("invalid expression values and missing donor labels are rejected", {
   m <- paired_counts()
   for (bad in c(-1, Inf, -Inf)) {

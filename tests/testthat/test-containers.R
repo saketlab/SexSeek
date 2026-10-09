@@ -32,7 +32,7 @@ test_that("Seurat split counts layers and RDS agree with the matrix path", {
   )
   expected <- EstimateSex(cbind(male, female),
     species = "human", group = c("M", "F"),
-    model = "logistic", input_scale = "normalised"
+    input_scale = "normalised"
   )
   path <- tempfile(fileext = ".rds")
   on.exit(unlink(path), add = TRUE)
@@ -40,7 +40,7 @@ test_that("Seurat split counts layers and RDS agree with the matrix path", {
   for (object in list(x, path)) {
     expect_equal(EstimateSex(object,
       species = "human", group = "donor",
-      model = "logistic", input_scale = "normalised"
+      input_scale = "normalised"
     ), expected)
   }
 })

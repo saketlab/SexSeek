@@ -51,11 +51,11 @@ test_that("RDS paths redispatch to matrices and containers with all arguments", 
     saveRDS(x, path)
     expect_equal(
       EstimateSex(path,
-        species = "human", model = "logistic",
+        species = "human",
         annotation = annotation_fixture(), input_scale = "normalised"
       ),
       EstimateSex(x,
-        species = "human", model = "logistic",
+        species = "human",
         annotation = annotation_fixture(), input_scale = "normalised"
       )
     )
@@ -69,11 +69,11 @@ test_that("RDS paths redispatch to matrices and containers with all arguments", 
   expect_equal(
     EstimateSex(path,
       species = "human", assay = "raw", group = "donor",
-      model = "logistic", input_scale = "normalised"
+      input_scale = "normalised"
     ),
     EstimateSex(se,
       species = "human", assay = "raw", group = "donor",
-      model = "logistic", input_scale = "normalised"
+      input_scale = "normalised"
     )
   )
 })
@@ -116,5 +116,5 @@ test_that("core estimation works with explicit species and no genevintage annota
   m[c("ACTB", "JPX"), 1] <- 1000
   out <- EstimateSex(m, species = "Homo sapiens")
   expect_s3_class(out, "data.frame")
-  expect_identical(out$model[[1]], "ratio")
+  expect_identical(out$verdict[[1]], "male")
 })
