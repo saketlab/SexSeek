@@ -15,8 +15,7 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE, comment = "#>",
-  dev = "png", dpi = 300, fig.retina = 1, out.width = "100%",
-  dev.args = c(if (capabilities("cairo")) list(type = "cairo"), list(family = "Arial"))
+  dev = "png", dpi = 120, fig.retina = 1, out.width = "100%"
 )
 has_tx <- requireNamespace("genevintage", quietly = TRUE) &&
   "aggregate_transcripts" %in% getNamespaceExports("genevintage")
@@ -37,7 +36,8 @@ ExampleData()
 
 ### Human, gene symbols
 
-Here we use [GSE199208](https://seqout.org/p/GSE199208), human submandibular gland, to check bulk counts where the matrix has gene symbols.
+[GSE199208](https://seqout.org/p/GSE199208) contains bulk counts from human submandibular gland.
+The rows of the matrix are gene symbols.
 
 ```{r human-bulk}
 hb <- ExampleData("human_bulk")
@@ -55,7 +55,9 @@ PlotSexEvidence(hb_cmp, main = "GSE199208, human bulk")
 
 ### Mouse, Ensembl gene IDs
 
-Here we use [GSE85136](https://seqout.org/p/GSE85136), mouse nucleus accumbens with both sexes in every group, to check bulk counts where the matrix has Ensembl IDs.
+[GSE85136](https://seqout.org/p/GSE85136) contains bulk counts from mouse nucleus accumbens.
+Each group contains male and female mice.
+The rows of the matrix are Ensembl gene IDs.
 
 ```{r mouse-bulk}
 mb <- ExampleData("mouse_bulk")
@@ -72,9 +74,9 @@ PlotSexEvidence(mb_cmp, main = "GSE85136, mouse bulk")
 
 ### Mouse, transcript IDs
 
-Here we demonstrate how to use [genevintage](https://github.com/saketlab/genevintage) to first aggregate information at gene level.
-Samples are taken from [GSE232600](https://seqout.org/p/GSE232600), mouse parathyroid quantified with
-Salmon at the level of transcript IDs.
+[GSE232600](https://seqout.org/p/GSE232600) contains counts from mouse parathyroid.
+Salmon calculated these counts for each transcript ID.
+Before you use `EstimateSex()`, use [genevintage](https://github.com/saketlab/genevintage) to add the transcript counts of each gene.
 
 ```{r tx-build, eval = FALSE}
 map <- genevintage::transcript2gene(rownames(tx), species = "Mus musculus")
@@ -99,7 +101,8 @@ mt_cmp <- CompareSex(
 mt_cmp[, c("unit", "verdict", "confidence", "recorded", "flags")]
 ```
 
-No `Xist` transcript was quantified, so females are `uncertain`:
+The data has no `Xist` transcript.
+Thus, all females get the verdict `uncertain`:
 
 ```{r tx-notes, eval = has_tx}
 unique(mt_cmp$notes[mt_cmp$verdict == "uncertain"])
@@ -114,7 +117,9 @@ PlotSexEvidence(mt_cmp, main = "GSE232600, mouse transcript level")
 
 ### Human
 
-Here we use [GSE196554](https://seqout.org/p/GSE196554), human skeletal muscle stem cells with one library per donor, to call sex per donor from single cells.
+[GSE196554](https://seqout.org/p/GSE196554) contains single-cell counts from human skeletal muscle stem cells.
+Each library contains the cells of one donor.
+`EstimateSex()` gives one verdict for each library.
 
 ```{r human-sc}
 hs <- ExampleData("human_sc")
@@ -128,13 +133,13 @@ table(recorded = hs_cmp$recorded_sex, call = hs_cmp$verdict)
 PlotSexEvidence(hs_cmp, main = "GSE196554, human single-cell (per donor)")
 ```
 
-Females with `inact_frac` below 0.05 and no Y signal abstain.
+If a female has an `inact_frac` less than 0.05 and no Y signal, the verdict is `uncertain`.
 
 ```{r human-sc-uncertain}
 hs_cmp[hs_cmp$verdict == "uncertain", c("unit", "inact_score", "inact_frac", "qc_score", "flags")]
 ```
 
-Cells with any Y-marker count:
+This plot shows the fraction of cells that have one or more Y-marker counts:
 
 ```{r human-sc-cells, fig.height = 4}
 PlotCellFraction(hs$counts, hs$species, hs$recorded, main = "GSE196554, per donor")
@@ -142,7 +147,8 @@ PlotCellFraction(hs$counts, hs$species, hs$recorded, main = "GSE196554, per dono
 
 ### Mouse
 
-Here we use [GSE132420](https://seqout.org/p/GSE132420), mouse lacrimal gland from wild-type and Sjögren's model strains, to repeat the single-cell check in mouse.
+[GSE132420](https://seqout.org/p/GSE132420) contains single-cell counts from mouse lacrimal gland.
+The mice are from wild-type strains and from Sjögren's model strains.
 
 ```{r mouse-sc}
 ms <- ExampleData("mouse_sc")
@@ -170,8 +176,9 @@ s[
 
 ### Rat: males only
 
-Here we use [GSE100122](https://seqout.org/p/GSE100122), rat dorsal root ganglion, to show a
-species whose panel has no `Xist`: males are called and females are `uncertain`.
+[GSE100122](https://seqout.org/p/GSE100122) contains bulk counts from rat dorsal root ganglion.
+The rat panel has no `Xist` marker.
+Thus, `EstimateSex()` can find males, but all females get the verdict `uncertain`.
 
 ```{r rat-bulk}
 rb <- ExampleData("rat_bulk")
@@ -188,9 +195,11 @@ PlotSexEvidence(rb_cmp, main = "GSE100122, rat bulk")
 
 ### Zebrafish: no panel
 
-Here we use [GSE123439](https://seqout.org/p/GSE123439), zebrafish gonads, to show a species
-with no panel. This is strain AB, a lab strain that has lost the differentiated
-sex chromosome, so every call is `unknown`.
+[GSE123439](https://seqout.org/p/GSE123439) contains bulk counts from zebrafish gonads.
+SexSeek has no panel for zebrafish.
+The fish are from strain AB.
+This strain does not have a differentiated sex chromosome.
+Thus, all verdicts are `unknown`.
 
 ```{r zebrafish}
 zb <- ExampleData("zebrafish_bulk")

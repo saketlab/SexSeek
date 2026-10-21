@@ -1,9 +1,9 @@
 # SexSeek <img src="man/figures/logo.png" align="right" height="139" alt="SexSeek logo" />
 
 `SexSeek` estimates genetic sex from bulk or single-cell expression counts, using
-sex-chromosome marker expression and X-inactivation markers. It predicts the matrix
- to be coming from `male`, `female`, `uncertain`, `possible_mixed` or `unknown`, each with 
-confidennce metrics.
+sex-chromosome marker expression and X-inactivation markers. Each sample, donor
+or cell is called `male`, `female`, `uncertain`, `possible_mixed` or `unknown`,
+with confidence metrics.
 
 ## Install
 
