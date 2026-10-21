@@ -15,6 +15,7 @@ permissions: read-all
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
+    continue-on-error: ${{ matrix.config.allow-failure == true }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }}${{ matrix.config.deps && ', hard deps' || '' }})
 
@@ -23,7 +24,8 @@ jobs:
       matrix:
         config:
           - {os: macos-latest,   r: 'release'}
-          - {os: macos-latest,   r: 'devel'}
+          # CRAN publishes no macOS binaries for R-devel, so setup can fail before the check
+          - {os: macos-latest,   r: 'devel',   allow-failure: true}
           - {os: windows-latest, r: 'release'}
           - {os: windows-latest, r: 'devel'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
