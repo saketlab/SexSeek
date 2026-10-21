@@ -38,7 +38,7 @@ or scientific name) to set it.
 You can provide your own set of sex genes or fetch it from [genevintage](https://github.com/saketlab/genevintage):
 
 ```r
-install.packages("genevintage", repos = "https://saketlab.r-universe.dev")
+install.packages("genevintage")
 sex_genes <- SexChromosomeGenes("human", release = 116, source = "ensembl")
 EstimateSex(counts, species = "human", annotation = sex_genes)
 EstimateSex(counts, species = "human", annotation = "genevintage")

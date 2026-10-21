@@ -6,6 +6,7 @@ on:
     paths-ignore: ["data-raw/**", "notes/**", "figures/**", "docs/**", "**.md"]
   pull_request:
     paths-ignore: ["data-raw/**", "notes/**", "figures/**", "docs/**", "**.md"]
+  workflow_dispatch:
 
 name: R-CMD-check.yaml
 
@@ -15,21 +16,28 @@ jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }}${{ matrix.config.deps && ', hard deps' || '' }})
 
     strategy:
       fail-fast: false
       matrix:
         config:
           - {os: macos-latest,   r: 'release'}
+          - {os: macos-latest,   r: 'devel'}
           - {os: windows-latest, r: 'release'}
+          - {os: windows-latest, r: 'devel'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
+          # DESCRIPTION promises R >= 4.1; Bioconductor Suggests do not install that far back
+          - {os: ubuntu-latest,   r: '4.1',     deps: '"hard"'}
+          # CRAN's noSuggests check: only Depends/Imports plus the test and vignette tooling
+          - {os: ubuntu-latest,   r: 'release', deps: '"hard"'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      _R_CHECK_FORCE_SUGGESTS_: ${{ matrix.config.deps == '"hard"' && 'false' || 'true' }}
 
     steps:
       - uses: actions/checkout@v6
@@ -41,11 +49,15 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: always
-          extra-repositories: https://saketlab.r-universe.dev
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          dependencies: ${{ matrix.config.deps || '"all"' }}
+          extra-packages: |
+            any::rcmdcheck
+            any::testthat
+            any::knitr
+            any::rmarkdown
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
