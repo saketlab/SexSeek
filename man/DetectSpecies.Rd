@@ -2,24 +2,23 @@
 % Please edit documentation in R/species.R
 \name{DetectSpecies}
 \alias{DetectSpecies}
-\title{Detect species from gene identifiers or symbols}
+\title{Detect species from gene IDs or symbols}
 \usage{
 DetectSpecies(features)
 }
 \arguments{
-\item{features}{A character vector of gene identifiers or symbols, typically
+\item{features}{A character vector of gene IDs or symbols, such as
 \code{rownames(counts)}.}
 }
 \value{
 A list with \code{species}, \code{confidence} (\code{high}, \code{medium}, \code{low}) and
-\code{method} (\code{id_prefix}, \code{symbol}, or \code{none}). \code{species} is \code{NULL} when
-nothing matched.
+\code{method} (\code{id_prefix}, \code{symbol}, \code{ambiguous} or \code{none}). \code{species} is
+\code{NULL} when no species matches. A \code{low} symbol match is a near tie between
+species with the same sex system. \code{candidates} gives these species.
 }
 \description{
-Tries stable-ID prefixes first; they are unambiguous and cost one regex per
-species. Falls back to scoring the input symbols against each species' panel
-symbols, which is weaker: panels overlap heavily between close relatives, so
-the returned confidence is what tells you whether to trust it.
+The function tries stable ID prefixes first. If no prefix matches, it compares
+symbols with each species panel. Close species share symbols, so check \code{confidence}.
 }
 \examples{
 DetectSpecies(c("ENSMUSG00000086503", "ENSMUSG00000069045"))

@@ -1,8 +1,5 @@
-#' Pull a counts matrix out of whatever the user handed us.
+#' Get a counts matrix from the input object.
 #'
-#' Every input path converges here, so the scoring code only ever sees a matrix
-#' with gene rownames. Optional containers are reached through
-#' `requireNamespace()` so the package installs and works without them.
 #' @noRd
 .as_counts <- function(x, assay = NULL, ...) UseMethod(".as_counts")
 
@@ -46,15 +43,13 @@
     ),
     stop("Unsupported file extension '.", ext, "'.", call. = FALSE)
   )
-  # an .rds can hold any supported object
+  # An .rds file can hold any supported object.
   if (ext == "rds") .as_counts(obj, assay = assay, ...) else obj
 }
 
 #' Read a delimited counts table.
 #'
-#' First column is gene identifiers; everything else must be numeric. Reading
-#' the header separately lets us set colClasses, which is the difference between
-#' seconds and minutes on a wide matrix.
+#' The first column holds the gene identifiers. All other columns must be numeric.
 #' @noRd
 .read_table_matrix <- function(path, ext) {
   sep <- if (ext == "csv") "," else .sniff_sep(path)
@@ -66,12 +61,10 @@
   .check_matrix(.df_to_matrix(df))
 }
 
-#' Guess the delimiter from the first line.
+#' Find the delimiter from the first line.
 #'
-#' A `.txt` deposit is as likely to be space-delimited as tab-delimited, and
-#' reading a space-delimited matrix as TSV yields one giant character column
-#' that then fails as "no numeric columns". `sep = ""` is read.table's
-#' any-whitespace mode.
+#' A tab in the first line gives TSV. Other files use `sep = ""`, which accepts
+#' any whitespace, because a `.txt` file can use spaces.
 #' @noRd
 .sniff_sep <- function(path) {
   con <- if (grepl("\\.gz$", path)) gzfile(path, "rt") else file(path, "rt")
@@ -108,7 +101,7 @@
   if (anyNA(features) || any(!nzchar(trimws(features)))) {
     stop("Gene identifiers must not be missing or empty.", call. = FALSE)
   }
-  # reject collisions under the same normalisation
+  # Stop if two identifiers are equal after normalisation.
   keys <- .norm_symbol(.strip_version(features))
   if (anyDuplicated(keys)) {
     stop("Duplicate or ambiguous gene identifiers. Supply unique gene IDs; ",
@@ -129,8 +122,7 @@
   m
 }
 
-#' A bare .mtx path is only meaningful with its barcode and feature files, so
-#' treat it as a pointer to the directory that holds all three.
+#' Read a .mtx path with the barcode and feature files in the same directory.
 #' @noRd
 .mtx_sibling <- function(path) {
   prefix <- sub("matrix\\.mtx(\\.gz)?$", "", basename(path))

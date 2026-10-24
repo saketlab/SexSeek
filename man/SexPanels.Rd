@@ -2,16 +2,16 @@
 % Please edit documentation in R/panels.R
 \name{SexPanels}
 \alias{SexPanels}
-\title{Sex-linked gene panels for every supported species}
+\title{Sex-linked gene panels for all supported species}
 \usage{
 SexPanels()
 }
 \value{
-A data frame with one row per gene and columns including
+A data frame with one row for each gene. The columns include
 \code{scientific_name}, \code{gene_id}, \code{gene_name}, \code{chr}, \code{role} and \code{tier}.
 }
 \description{
-One row per sex-linked gene. \code{role} is one of \code{Y}, \code{X}, \code{W}, \code{Z},
+One row for each sex-linked gene. \code{role} is \code{Y}, \code{X}, \code{W}, \code{Z},
 \code{inactivation} (XIST, RSX) or \code{male_specific} (roX1, roX2).
 }
 \examples{

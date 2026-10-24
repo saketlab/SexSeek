@@ -2,7 +2,7 @@
 % Please edit documentation in R/species.R
 \name{ResolveSpecies}
 \alias{ResolveSpecies}
-\title{Resolve a user-supplied species name to a scientific name}
+\title{Change a species name to its scientific name}
 \usage{
 ResolveSpecies(name)
 }
@@ -10,11 +10,11 @@ ResolveSpecies(name)
 \item{name}{A species name.}
 }
 \value{
-The scientific name, or \code{NULL} if unrecognised.
+The scientific name, or \code{NULL} if the name is not known.
 }
 \description{
-Accepts a scientific name, a common name, or any alias in the shipped alias
-table, in any case.
+Give a scientific name, a common name, or an alias from the package alias
+table. Matching ignores case.
 }
 \examples{
 ResolveSpecies("mouse")

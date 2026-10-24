@@ -4,7 +4,7 @@
 \alias{MarkerCellFraction}
 \alias{MarkerCellFraction.list}
 \alias{MarkerCellFraction.default}
-\title{Fraction of cells carrying any sex-specific marker count}
+\title{Fraction of cells with a sex-specific marker count}
 \usage{
 MarkerCellFraction(x, species, group = NULL)
 
@@ -14,20 +14,19 @@ MarkerCellFraction(x, species, group = NULL)
 }
 \arguments{
 \item{x}{Counts with cells in columns (matrix, sparse matrix, data frame or
-file path), or a named list of them, one per unit.}
+file path), or a named list of them, one element for each unit.}
 
-\item{species}{Species name, scientific or common.}
+\item{species}{The scientific name or the common name of the species.}
 
-\item{group}{For a matrix, the unit of each column. \code{NULL} treats the whole
-matrix as one unit.}
+\item{group}{For a matrix, the unit of each column. With \code{NULL}, the full
+matrix is one unit.}
 }
 \value{
 A data frame with \code{unit}, \code{n_cells} and \code{fraction}.
 }
 \description{
-For each unit, the share of columns (cells) with at least one count across
-the species' scoring-tier sex-specific markers (Y in XY species, W in ZW
-species).
+For each unit, the fraction of columns (cells) with one or more counts on the
+sex-specific markers of the scoring tier (Y in XY species, W in ZW species).
 }
 \examples{
 ex <- ExampleData("mouse_sc")

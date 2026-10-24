@@ -9,20 +9,19 @@ CompareSex(calls, recorded)
 \arguments{
 \item{calls}{Output of \code{\link[=EstimateSex]{EstimateSex()}}.}
 
-\item{recorded}{Recorded sex as a character vector named by unit, matching
-\code{calls$unit}.}
+\item{recorded}{Recorded sex as a character vector. The names are the units
+in \code{calls$unit}.}
 }
 \value{
-\code{calls} with three columns added: \code{recorded} (as given),
-\code{recorded_sex} (\code{"female"}, \code{"male"} or \code{NA}) and \code{agrees}: \code{TRUE} when the
-verdict is the recorded sex, \code{FALSE} when it is the other sex, and \code{NA}
-when the call abstains (\code{uncertain}, \code{possible_mixed}, \code{unknown}) or no
-usable sex is recorded.
+\code{calls} with three more columns: \code{recorded} (as given),
+\code{recorded_sex} (\code{"female"}, \code{"male"} or \code{NA}) and \code{agrees}. \code{agrees} is
+\code{TRUE} when the verdict is the recorded sex and \code{FALSE} when it is the other
+sex. It is \code{NA} when the verdict is \code{uncertain}, \code{possible_mixed} or
+\code{unknown}, or when the recorded sex is not usable.
 }
 \description{
-Joins \code{\link[=EstimateSex]{EstimateSex()}} calls to the sex recorded for each unit. Only
-\code{female}/\code{male} (or \code{F}/\code{M}, any case) are scored; other labels are kept as
-recorded.
+Adds the recorded sex of each unit to the \code{\link[=EstimateSex]{EstimateSex()}} calls. Only \code{female},
+\code{male}, \code{F} and \code{M} (any case) count.
 }
 \examples{
 ex <- ExampleData("mouse_bulk")

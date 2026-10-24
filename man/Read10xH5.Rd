@@ -10,16 +10,14 @@ Read10xH5(path, feature_column = c("id", "name"))
 \item{path}{Path to a \code{.h5} file.}
 
 \item{feature_column}{For v3 files, \code{"id"} for Ensembl identifiers or
-\code{"name"} for symbols. Identifiers are preferred; symbols cannot
-distinguish species.}
+\code{"name"} for symbols. Identifiers give the most reliable species detection.}
 }
 \value{
 A sparse matrix with gene rownames and barcode colnames.
 }
 \description{
-Handles both the CellRanger v2 layout (a single named group holding the
-genome) and the v3 layout (a \code{matrix} group with a \code{features} subgroup).
-Needs the \code{hdf5r} package, which is a suggested dependency.
+Accepts the CellRanger v2 layout (one genome group) and the v3 layout
+(a \code{matrix} group with a \code{features} group). Needs the \code{hdf5r} package.
 }
 \examples{
 \dontshow{if (requireNamespace("hdf5r", quietly = TRUE)) withAutoprint(\{ # examplesIf}

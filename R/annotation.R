@@ -1,15 +1,14 @@
-#' Retrieve sex-chromosome annotations with genevintage
+#' Get sex chromosome annotation with genevintage
 #'
-#' Returns a chromosome inventory, not a diagnostic marker panel. Pass the
-#' result to `EstimateSex(annotation = ...)` to reconcile curated markers
-#' against this annotation. Fetch once and reuse across datasets.
+#' List every gene on the sex chromosomes.
+#' Used by `EstimateSex(annotation = ...)`.
 #'
-#' @param species Scientific or common species name.
-#' @param release,assembly,source Annotation selection passed to
-#'   [genevintage::sex_genes()]. Pin these for reproducible analyses.
-#' @param mapping Optional local annotation with `id`, `name`, `chr`, `biotype`
-#'   columns. Supplying this avoids downloads.
-#' @return A data frame with `id`, `name`, `chr`, and `biotype` columns.
+#' @param species A scientific or common species name.
+#' @param release,assembly,source The annotation selection for
+#'   [genevintage::sex_genes()]. Pin these for reproducible results.
+#' @param mapping Optional local annotation with `id`, `name`, `chr` and `biotype`
+#'   columns. Pass it to skip the download.
+#' @return A data frame with `id`, `name`, `chr` and `biotype` columns.
 #' @examplesIf requireNamespace("genevintage", quietly = TRUE)
 #' # A local mapping avoids any download.
 #' mapping <- data.frame(
@@ -62,8 +61,8 @@ SexChromosomeGenes <- function(species, release = NULL, assembly = NULL,
   annotation
 }
 
-#' Reconcile curated markers on their expected chromosome. Ambiguous symbols
-#' are excluded instead of selecting an arbitrary gene.
+#' Match curated markers to the annotation on their expected chromosome.
+#' A marker without one unique ID match or name match gets `NA`.
 #' @noRd
 .annotate_markers <- function(panel, annotation, chromosome) {
   if (is.null(annotation)) {

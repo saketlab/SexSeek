@@ -63,63 +63,48 @@ EstimateSex(x, ...)
 \item{x}{A counts matrix, sparse matrix, data frame, file path, or a
 supported container (Seurat, SingleCellExperiment).}
 
-\item{...}{Passed to methods.}
+\item{...}{Arguments for methods.}
 
-\item{group}{Optional grouping of columns into units, as a vector the length
-of \code{ncol(x)} or the name of a column in the object's metadata. Defaults to
-treating the whole matrix as one unit.}
+\item{group}{Optional column groups, as a vector of length \code{ncol(x)} or the
+name of a metadata column. Use one group for each donor. If \code{NULL}, the
+full matrix is one unit.}
 
-\item{per_cell}{Report one row per column instead of aggregating.}
+\item{per_cell}{If \code{TRUE}, give one row for each column. This mode has no
+validation. Dropout and ambient RNA can cause false calls in single cells.}
 
-\item{species}{Species name, scientific or common. Detected from the gene
-identifiers when \code{NULL}.}
+\item{species}{Species name, scientific or common. If \code{NULL}, SexSeek
+detects it from the gene identifiers.}
 
 \item{annotation}{Optional sex-chromosome table from \code{\link[=SexChromosomeGenes]{SexChromosomeGenes()}},
-or \code{"genevintage"} to fetch the newest annotation for the resolved species.
-\code{NULL} uses shipped markers without downloading. A supplied table must
-belong to the input species; use the full chromosome inventory, including
-zero-expression genes. Curated markers absent from it are excluded.}
+or \code{"genevintage"} to download the newest annotation for the species.
+\code{NULL} uses the shipped markers and downloads nothing. The table must be
+for the input species and must list every gene on the sex chromosomes,
+unexpressed genes too. SexSeek drops curated markers missing from it.}
 
-\item{input_scale}{\code{"auto"} checks every stored value for fractional counts;
-\code{"counts"} requires integer-like values; \code{"normalised"} explicitly declares
-normalised or estimated expression and caps confidence even if rounded.
-Integer-like values alone cannot establish raw-count provenance.}
+\item{input_scale}{\code{"auto"} examines all values for fractional counts.
+\code{"counts"} stops if a value is not integer-like. \code{"normalised"} declares
+normalised or estimated values and caps confidence even after rounding.
+Rounded normalised data also looks integer-like.}
 
-\item{assay}{Assay to read counts from. Defaults to the object's active or
-first assay.}
+\item{assay}{The assay with counts. If \code{NULL}, the Seurat method
+uses the default assay of the object.}
 }
 \value{
-A data frame, one row per unit, with verdict, heuristic confidence,
-marker CPM, gametolog and inactivation fractions, depth and diagnostic flags.
-Confidence categories are not calibrated probabilities. \code{inact_measured}
-is \code{FALSE} when the species panel has no inactivation marker or the input
-lacks its row; \code{inact_score} is then 0 without being measured. \code{per_cell = TRUE}
-adds \code{per_cell_unvalidated} and caps confidence at medium.
+A data frame with one row for each unit. It gives the verdict,
+heuristic confidence, marker CPM, gametolog and inactivation fractions,
+depth and diagnostic flags. If the
+species panel or the input has no inactivation marker, \code{inact_measured} is
+\code{FALSE} and \code{inact_score} holds a placeholder 0. \code{per_cell = TRUE} adds
+\code{per_cell_unvalidated} and caps confidence at medium.
 }
 \description{
-Scores two complementary lines of evidence, expression of sex-specific
-chromosome markers and expression of the X-inactivation marker, and reports
-the state they jointly imply. It does not force a male/female answer.
+Scores sex-specific markers and the X-inactivation marker. A female call needs
+inactivation marker signal. Missing Y signal alone gives \code{uncertain}.
 }
 \details{
-A named list of matrices is scored one element per unit; elements
-may have different gene lists and are never zero-padded. \code{group} is not
-accepted for a list. With \code{per_cell = TRUE} each unit is
-\verb{<element>:<column>}.
-
-Absence of Y signal is \strong{not} evidence of female: loss of Y in aged male
-blood, shallow sequencing and incomplete annotation all look identical to a
-female sample. Most species in the shipped panel have no annotated
-X-inactivation marker at all, so for those a female verdict is never
-available and the honest answer is \code{uncertain}.
-
-For single-cell input the default is to aggregate, and the biological unit is
-the \strong{donor}, not the library. Pass \code{group} for anything that may hold more
-than one donor. A male cell can carry zero Y UMIs through dropout alone, and
-ambient RNA in a mixed-sex run carries Y transcripts into female droplets,
-which is a direct false-male mechanism. \code{per_cell = TRUE} is therefore
-\strong{unvalidated}: it has not been tested against cell-level donor labels or
-doublet calls, and its output should be read as evidence, not as a call.
+In a named list of matrices, each element is one unit. The elements
+can have different genes, and SexSeek keeps each gene set as given. Do not give
+\code{group} for a list. With \code{per_cell = TRUE}, each unit is \verb{<element>:<column>}.
 }
 \examples{
 path <- system.file("extdata", "example_counts.tsv.gz", package = "SexSeek")

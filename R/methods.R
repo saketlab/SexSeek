@@ -1,6 +1,6 @@
 #' @rdname EstimateSex
-#' @param assay Assay to read counts from. Defaults to the object's active or
-#'   first assay.
+#' @param assay The assay with counts. If `NULL`, the Seurat method
+#'   uses the default assay of the object.
 #' @export
 EstimateSex.Seurat <- function(x, species = NULL, group = NULL,
                                per_cell = FALSE, assay = NULL,
@@ -68,11 +68,10 @@ EstimateSex.SingleCellExperiment <- function(x, species = NULL, group = NULL,
 #' @export
 EstimateSex.SummarizedExperiment <- EstimateSex.SingleCellExperiment
 
-#' Resolve `group` against object metadata.
+#' Get the sample groups from `group` and the object metadata.
 #'
-#' A length-one `group` naming a metadata column is the common case; users say
-#' `group = "donor"`, not `group = obj$donor`. A longer vector is taken as the
-#' grouping itself.
+#' A `group` of length one is the name of a metadata column. A longer vector
+#' gives the group of each column.
 #' @noRd
 .group_from <- function(group, meta, cells) {
   if (is.null(group)) {

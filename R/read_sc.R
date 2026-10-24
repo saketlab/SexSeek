@@ -1,13 +1,12 @@
 #' Read a 10x MatrixMarket triplet from a directory
 #'
-#' Expects `matrix.mtx`, a barcode file and a feature file, each optionally
-#' gzipped, as CellRanger writes them. `Matrix::readMM` does the parsing, so
-#' this costs no dependency beyond what the package already needs.
+#' The directory holds `matrix.mtx`, a barcode file and a feature file, plain or gzip.
+#' The function uses `data.table::fread` if it is installed.
 #'
-#' @param dir Directory holding the triplet.
-#' @param feature_column Which column of the feature file to use as rownames.
-#'   CellRanger v3 writes id, symbol, type; column 1 is the Ensembl identifier,
-#'   which is what species detection and panel matching want.
+#' @param dir Directory that holds the triplet.
+#' @param feature_column The column of the feature file to use as rownames.
+#'   In CellRanger v3 files, column 1 is the Ensembl identifier. Species
+#'   detection and panel matches use this column.
 #' @return A sparse matrix with gene rownames and barcode colnames.
 #' @examples
 #' dir <- file.path(tempdir(), "tenx")
@@ -26,7 +25,7 @@ Read10xDir <- function(dir, feature_column = 1L) {
   if (!dir.exists(dir)) {
     stop("Not a directory: ", dir, call. = FALSE)
   }
-  # GEO prefixes names, e.g. GSM9323718_6854-37_matrix.mtx.gz
+  # GEO adds a prefix, for example GSM9323718_6854-37_matrix.mtx.gz.
   mtx <- .pick_file(dir, "matrix\\.mtx(\\.gz)?$", "matrix.mtx")
   bar <- .pick_file(dir, "barcodes\\.tsv(\\.gz)?$", "barcodes.tsv")
   fea <- .pick_file(
@@ -38,11 +37,11 @@ Read10xDir <- function(dir, feature_column = 1L) {
 
 #' @noRd
 .read_10x_triplet <- function(mtx, bar, fea, feature_column = 1L) {
-  m <- Matrix::readMM(mtx)
+  m <- .read_mtx(mtx)
   features <- .read_col(fea, feature_column)
   barcodes <- .read_col(bar, 1L)
 
-  # partial download or mixed runs; recycling names would mislabel every gene
+  # Stop on a size mismatch, because recycled names give incorrect gene labels.
   if (nrow(m) != length(features) || ncol(m) != length(barcodes)) {
     stop(
       "Triplet is inconsistent in ", dirname(mtx), ": matrix is ", nrow(m), "x", ncol(m),
@@ -54,6 +53,45 @@ Read10xDir <- function(dir, feature_column = 1L) {
   rownames(m) <- features
   colnames(m) <- barcodes
   .check_matrix(m)
+}
+
+#' Read a MatrixMarket file, with fread when available
+#'
+#' Files that are not in the general format use readMM.
+#' @noRd
+.read_mtx <- function(path) {
+  if (!requireNamespace("data.table", quietly = TRUE) ||
+    (grepl("\\.gz$", path) && !requireNamespace("R.utils", quietly = TRUE))) {
+    return(Matrix::readMM(path))
+  }
+  con <- file(path, "rt")
+  header <- readLines(con, n = 1L)
+  n_skip <- 1L
+  repeat {
+    line <- readLines(con, n = 1L)
+    n_skip <- n_skip + 1L
+    if (!length(line) || !startsWith(line, "%")) break
+  }
+  close(con)
+  if (!grepl("coordinate\\s+(integer|real)\\s+general", header, ignore.case = TRUE) ||
+    !length(line)) {
+    return(Matrix::readMM(path))
+  }
+  dims <- as.integer(strsplit(trimws(line), "\\s+")[[1]])
+  x <- tryCatch(
+    data.table::fread(path,
+      skip = n_skip, header = FALSE, showProgress = FALSE,
+      colClasses = c("integer", "integer", "double")
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(x) || nrow(x) != dims[3] || ncol(x) != 3L) {
+    return(Matrix::readMM(path))
+  }
+  Matrix::sparseMatrix(
+    i = x[[1]], j = x[[2]], x = x[[3]],
+    dims = dims[1:2], repr = "C"
+  )
 }
 
 #' @noRd
@@ -86,14 +124,12 @@ Read10xDir <- function(dir, feature_column = 1L) {
 
 #' Read a 10x HDF5 counts file
 #'
-#' Handles both the CellRanger v2 layout (a single named group holding the
-#' genome) and the v3 layout (a `matrix` group with a `features` subgroup).
-#' Needs the `hdf5r` package, which is a suggested dependency.
+#' Accepts the CellRanger v2 layout (one genome group) and the v3 layout
+#' (a `matrix` group with a `features` group). Needs the `hdf5r` package.
 #'
 #' @param path Path to a `.h5` file.
 #' @param feature_column For v3 files, `"id"` for Ensembl identifiers or
-#'   `"name"` for symbols. Identifiers are preferred; symbols cannot
-#'   distinguish species.
+#'   `"name"` for symbols. Identifiers give the most reliable species detection.
 #' @return A sparse matrix with gene rownames and barcode colnames.
 #' @examplesIf requireNamespace("hdf5r", quietly = TRUE)
 #' path <- tempfile(fileext = ".h5")
@@ -121,7 +157,7 @@ Read10xH5 <- function(path, feature_column = c("id", "name")) {
   root <- if ("matrix" %in% names(h5)) "matrix" else names(h5)[1]
   g <- h5[[root]]
 
-  # v3 nests features; v2 keeps genes and gene_names beside the data
+  # v3 has a features group. v2 has genes and gene_names next to the data.
   ids <- if ("features" %in% names(g)) {
     key <- if (feature_column == "id") "id" else "name"
     g[["features"]][[key]]$read()

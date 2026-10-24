@@ -7,8 +7,8 @@
 SexSpecies()
 }
 \value{
-A data frame with one row per species, including its
-sex-determination \code{system}, \code{heterogametic} sex and panel \code{status}.
+A data frame with one row for each species. The columns include the
+sex-determination \code{system}, the \code{heterogametic} sex and the panel \code{status}.
 }
 \description{
 Supported species and their sex-determination systems

@@ -2,7 +2,7 @@
 % Please edit documentation in R/annotation.R
 \name{SexChromosomeGenes}
 \alias{SexChromosomeGenes}
-\title{Retrieve sex-chromosome annotations with genevintage}
+\title{Get sex chromosome annotation with genevintage}
 \usage{
 SexChromosomeGenes(
   species,
@@ -13,21 +13,20 @@ SexChromosomeGenes(
 )
 }
 \arguments{
-\item{species}{Scientific or common species name.}
+\item{species}{A scientific or common species name.}
 
-\item{release, assembly, source}{Annotation selection passed to
-\code{\link[genevintage:sex_genes]{genevintage::sex_genes()}}. Pin these for reproducible analyses.}
+\item{release, assembly, source}{The annotation selection for
+\code{\link[genevintage:sex_genes]{genevintage::sex_genes()}}. Pin these for reproducible results.}
 
-\item{mapping}{Optional local annotation with \code{id}, \code{name}, \code{chr}, \code{biotype}
-columns. Supplying this avoids downloads.}
+\item{mapping}{Optional local annotation with \code{id}, \code{name}, \code{chr} and \code{biotype}
+columns. Pass it to skip the download.}
 }
 \value{
-A data frame with \code{id}, \code{name}, \code{chr}, and \code{biotype} columns.
+A data frame with \code{id}, \code{name}, \code{chr} and \code{biotype} columns.
 }
 \description{
-Returns a chromosome inventory, not a diagnostic marker panel. Pass the
-result to \code{EstimateSex(annotation = ...)} to reconcile curated markers
-against this annotation. Fetch once and reuse across datasets.
+List every gene on the sex chromosomes.
+Used by \code{EstimateSex(annotation = ...)}.
 }
 \examples{
 \dontshow{if (requireNamespace("genevintage", quietly = TRUE)) withAutoprint(\{ # examplesIf}

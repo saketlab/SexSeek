@@ -7,22 +7,24 @@
 ExampleData(dataset = NULL)
 }
 \arguments{
-\item{dataset}{A name from \code{ExampleData()$dataset}. \code{NULL} lists them.}
+\item{dataset}{A name from \code{ExampleData()$dataset}. With \code{NULL}, you get the
+list of datasets.}
 }
 \value{
 With \code{dataset = NULL}, a data frame of the available datasets.
-Otherwise a list with \code{dataset}, \code{study}, \code{species}, \code{assay}, \code{tissue},
-\code{counts} (a matrix; a named list of sparse matrices, one per donor, for
-single-cell; transcript rows for \code{"mouse_tx"}), \code{recorded} (the recorded
-sex named by sample, as written in the record), \code{samples} (sample
-accession, title and recorded sex) and \code{tx2gene} (the transcript-to-gene
-table for \code{"mouse_tx"}, otherwise \code{NULL}).
+For a dataset name, a list with \code{dataset}, \code{study}, \code{species}, \code{assay},
+\code{tissue}, \code{counts}, \code{recorded}, \code{samples} and \code{tx2gene}. \code{counts} has the
+rows that \code{\link[=EstimateSex]{EstimateSex()}} scores and an \code{OTHER} row with the remaining
+counts, so the calls match the full matrix. It is a matrix. For
+single-cell data, it is a named list of sparse matrices, one for each
+donor. For \code{"mouse_tx"}, its rows are transcripts. \code{recorded} is the
+recorded sex named by sample, as written in the record. \code{samples} has the
+sample accession, title and recorded sex. \code{tx2gene} is the
+transcript-to-gene table for \code{"mouse_tx"}, and \code{NULL} for other datasets.
 }
 \description{
-Excerpts of public GEO datasets whose sample records state each donor's
-sex. Each keeps the rows \code{\link[=EstimateSex]{EstimateSex()}} scores for the species plus an
-\code{OTHER} row with the rest of each library, so calls match the full matrix.
-Excerpts are too small for species detection; pass \code{species}.
+Parts of public GEO datasets with the recorded sex of each donor. Pass \code{species}:
+the subsets are too small for detection.
 }
 \examples{
 ExampleData()

@@ -1,15 +1,14 @@
 #' @rdname EstimateSex
-#' @details A named list of matrices is scored one element per unit; elements
-#'   may have different gene lists and are never zero-padded. `group` is not
-#'   accepted for a list. With `per_cell = TRUE` each unit is
-#'   `<element>:<column>`.
+#' @details In a named list of matrices, each element is one unit. The elements
+#'   can have different genes, and SexSeek keeps each gene set as given. Do not give
+#'   `group` for a list. With `per_cell = TRUE`, each unit is `<element>:<column>`.
 #' @export
 EstimateSex.list <- function(x, ..., group = NULL, per_cell = FALSE) {
   .check_unit_list(x, group)
   .per_unit(x, EstimateSex, ..., per_cell = per_cell, prefix = isTRUE(per_cell))
 }
 
-#' f on each element, unit set to the element name (or prefixed by it)
+#' Apply f to each element. The unit is the element name, or has it as a prefix.
 #' @noRd
 .per_unit <- function(x, f, ..., prefix = FALSE) {
   out <- do.call(rbind, lapply(names(x), function(u) {
@@ -35,18 +34,17 @@ EstimateSex.list <- function(x, ..., group = NULL, per_cell = FALSE) {
 
 #' Compare calls with recorded sex
 #'
-#' Joins [EstimateSex()] calls to the sex recorded for each unit. Only
-#' `female`/`male` (or `F`/`M`, any case) are scored; other labels are kept as
-#' recorded.
+#' Adds the recorded sex of each unit to the [EstimateSex()] calls. Only `female`,
+#' `male`, `F` and `M` (any case) count.
 #'
 #' @param calls Output of [EstimateSex()].
-#' @param recorded Recorded sex as a character vector named by unit, matching
-#'   `calls$unit`.
-#' @return `calls` with three columns added: `recorded` (as given),
-#'   `recorded_sex` (`"female"`, `"male"` or `NA`) and `agrees`: `TRUE` when the
-#'   verdict is the recorded sex, `FALSE` when it is the other sex, and `NA`
-#'   when the call abstains (`uncertain`, `possible_mixed`, `unknown`) or no
-#'   usable sex is recorded.
+#' @param recorded Recorded sex as a character vector. The names are the units
+#'   in `calls$unit`.
+#' @return `calls` with three more columns: `recorded` (as given),
+#'   `recorded_sex` (`"female"`, `"male"` or `NA`) and `agrees`. `agrees` is
+#'   `TRUE` when the verdict is the recorded sex and `FALSE` when it is the other
+#'   sex. It is `NA` when the verdict is `uncertain`, `possible_mixed` or
+#'   `unknown`, or when the recorded sex is not usable.
 #' @examples
 #' ex <- ExampleData("mouse_bulk")
 #' calls <- EstimateSex(ex$counts, species = ex$species, group = colnames(ex$counts))
@@ -74,7 +72,7 @@ CompareSex <- function(calls, recorded) {
   unname(as.character(recorded[match(units, names(recorded))]))
 }
 
-#' anything but female/male is unscorable
+#' Labels other than female and male become NA.
 #' @noRd
 .recorded_sex <- function(x) {
   x <- tolower(trimws(x))
@@ -84,11 +82,12 @@ CompareSex <- function(calls, recorded) {
   out
 }
 
-#' Count agreements with recorded sex
+#' Count the calls that agree with the recorded sex
 #'
 #' @param x Output of [CompareSex()], or a named list of them.
-#' @return One row per comparison: `samples`, and how many calls `agree`,
-#'   `disagree` or `abstain` (including samples with no usable recorded sex).
+#' @return One row for each comparison, with `samples` and the number of calls
+#'   in `agree`, `disagree` and `abstain`. `abstain` also counts samples with no
+#'   usable recorded sex.
 #' @examples
 #' ex <- ExampleData("rat_bulk")
 #' calls <- EstimateSex(ex$counts, species = ex$species, group = colnames(ex$counts))
@@ -112,17 +111,16 @@ SummariseComparison <- function(x) {
   cbind(comparison = names(x), out, row.names = NULL)
 }
 
-#' Fraction of cells carrying any sex-specific marker count
+#' Fraction of cells with a sex-specific marker count
 #'
-#' For each unit, the share of columns (cells) with at least one count across
-#' the species' scoring-tier sex-specific markers (Y in XY species, W in ZW
-#' species).
+#' For each unit, the fraction of columns (cells) with one or more counts on the
+#' sex-specific markers of the scoring tier (Y in XY species, W in ZW species).
 #'
 #' @param x Counts with cells in columns (matrix, sparse matrix, data frame or
-#'   file path), or a named list of them, one per unit.
-#' @param species Species name, scientific or common.
-#' @param group For a matrix, the unit of each column. `NULL` treats the whole
-#'   matrix as one unit.
+#'   file path), or a named list of them, one element for each unit.
+#' @param species The scientific name or the common name of the species.
+#' @param group For a matrix, the unit of each column. With `NULL`, the full
+#'   matrix is one unit.
 #' @return A data frame with `unit`, `n_cells` and `fraction`.
 #' @examples
 #' ex <- ExampleData("mouse_sc")

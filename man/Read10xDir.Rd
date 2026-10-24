@@ -7,19 +7,18 @@
 Read10xDir(dir, feature_column = 1L)
 }
 \arguments{
-\item{dir}{Directory holding the triplet.}
+\item{dir}{Directory that holds the triplet.}
 
-\item{feature_column}{Which column of the feature file to use as rownames.
-CellRanger v3 writes id, symbol, type; column 1 is the Ensembl identifier,
-which is what species detection and panel matching want.}
+\item{feature_column}{The column of the feature file to use as rownames.
+In CellRanger v3 files, column 1 is the Ensembl identifier. Species
+detection and panel matches use this column.}
 }
 \value{
 A sparse matrix with gene rownames and barcode colnames.
 }
 \description{
-Expects \code{matrix.mtx}, a barcode file and a feature file, each optionally
-gzipped, as CellRanger writes them. \code{Matrix::readMM} does the parsing, so
-this costs no dependency beyond what the package already needs.
+The directory holds \code{matrix.mtx}, a barcode file and a feature file, plain or gzip.
+The function uses \code{data.table::fread} if it is installed.
 }
 \examples{
 dir <- file.path(tempdir(), "tenx")

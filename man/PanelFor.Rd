@@ -2,24 +2,22 @@
 % Please edit documentation in R/panels.R
 \name{PanelFor}
 \alias{PanelFor}
-\title{The panel rows for one species}
+\title{Panel rows for one species}
 \usage{
 PanelFor(species, tier = "core")
 }
 \arguments{
-\item{species}{A scientific name, as it appears in \code{\link[=SexSpecies]{SexSpecies()}}.}
+\item{species}{A scientific or common name that
+\code{\link[=ResolveSpecies]{ResolveSpecies()}} accepts.}
 
-\item{tier}{Which tiers to keep. \code{NULL} returns every row.}
+\item{tier}{The tiers to keep. \code{NULL} keeps all rows.}
 }
 \value{
 A data frame of panel rows.
 }
 \description{
-Defaults to the \code{core} tier, which is what scoring uses: a curated set of
-uniquely mappable, somatic-tissue markers. The full inventory carries every
-gene on the sex chromosomes and is far too permissive to call from:
-ampliconic and testis-restricted Y families in particular fire on tissue, not
-on genotype.
+The default \code{core} tier holds the curated somatic markers that the score uses.
+Ampliconic and testis Y genes in the full inventory follow tissue type.
 }
 \examples{
 PanelFor("Homo sapiens")[, c("gene_name", "role", "tier")]

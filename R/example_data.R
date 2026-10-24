@@ -32,19 +32,21 @@
 
 #' Example datasets with recorded sex
 #'
-#' Excerpts of public GEO datasets whose sample records state each donor's
-#' sex. Each keeps the rows [EstimateSex()] scores for the species plus an
-#' `OTHER` row with the rest of each library, so calls match the full matrix.
-#' Excerpts are too small for species detection; pass `species`.
+#' Parts of public GEO datasets with the recorded sex of each donor. Pass `species`:
+#' the subsets are too small for detection.
 #'
-#' @param dataset A name from `ExampleData()$dataset`. `NULL` lists them.
+#' @param dataset A name from `ExampleData()$dataset`. With `NULL`, you get the
+#'   list of datasets.
 #' @return With `dataset = NULL`, a data frame of the available datasets.
-#'   Otherwise a list with `dataset`, `study`, `species`, `assay`, `tissue`,
-#'   `counts` (a matrix; a named list of sparse matrices, one per donor, for
-#'   single-cell; transcript rows for `"mouse_tx"`), `recorded` (the recorded
-#'   sex named by sample, as written in the record), `samples` (sample
-#'   accession, title and recorded sex) and `tx2gene` (the transcript-to-gene
-#'   table for `"mouse_tx"`, otherwise `NULL`).
+#'   For a dataset name, a list with `dataset`, `study`, `species`, `assay`,
+#'   `tissue`, `counts`, `recorded`, `samples` and `tx2gene`. `counts` has the
+#'   rows that [EstimateSex()] scores and an `OTHER` row with the remaining
+#'   counts, so the calls match the full matrix. It is a matrix. For
+#'   single-cell data, it is a named list of sparse matrices, one for each
+#'   donor. For `"mouse_tx"`, its rows are transcripts. `recorded` is the
+#'   recorded sex named by sample, as written in the record. `samples` has the
+#'   sample accession, title and recorded sex. `tx2gene` is the
+#'   transcript-to-gene table for `"mouse_tx"`, and `NULL` for other datasets.
 #' @examples
 #' ExampleData()
 #' ex <- ExampleData("rat_bulk")

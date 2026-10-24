@@ -22,9 +22,11 @@ Imports:
     stats,
     utils
 Suggests:
+    data.table,
     genevintage (>= 0.1.3),
     hdf5r,
     knitr,
+    R.utils,
     rmarkdown,
     SeuratObject,
     SingleCellExperiment,

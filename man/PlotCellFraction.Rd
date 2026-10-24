@@ -2,31 +2,30 @@
 % Please edit documentation in R/plots.R
 \name{PlotCellFraction}
 \alias{PlotCellFraction}
-\title{Plot the fraction of cells carrying a marker count}
+\title{Plot the fraction of cells with a marker count}
 \usage{
 PlotCellFraction(x, species, recorded = NULL, group = NULL, main = NULL)
 }
 \arguments{
 \item{x}{Counts with cells in columns (matrix, sparse matrix, data frame or
-file path), or a named list of them, one per unit.}
+file path), or a named list of them, one element for each unit.}
 
-\item{species}{Species name, scientific or common.}
+\item{species}{The scientific name or the common name of the species.}
 
-\item{recorded}{Optional recorded sex named by unit; see \code{\link[=CompareSex]{CompareSex()}}.}
+\item{recorded}{Optional recorded sex, named by unit. See \code{\link[=CompareSex]{CompareSex()}}.}
 
-\item{group}{For a matrix, the unit of each column. \code{NULL} treats the whole
-matrix as one unit.}
+\item{group}{For a matrix, the unit of each column. With \code{NULL}, the full
+matrix is one unit.}
 
 \item{main}{Plot title.}
 }
 \value{
-A ggplot whose \code{data} is the \code{\link[=MarkerCellFraction]{MarkerCellFraction()}} table, with
-\code{recorded_sex} when \code{recorded} was given.
+A ggplot. Its \code{data} is the \code{\link[=MarkerCellFraction]{MarkerCellFraction()}} table, with
+\code{recorded_sex} when you give \code{recorded}.
 }
 \description{
-Bars of \code{\link[=MarkerCellFraction]{MarkerCellFraction()}} per unit. When \code{recorded} is given, each bar
-is topped by the recorded sex (circle female, triangle male). The result is
-a ggplot, so scales and theme can be replaced.
+One bar of \code{\link[=MarkerCellFraction]{MarkerCellFraction()}} for each unit. If you give \code{recorded}, a
+point above each bar shows the recorded sex (circle is female, triangle is male).
 }
 \examples{
 ex <- ExampleData("mouse_sc")

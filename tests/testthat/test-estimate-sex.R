@@ -159,18 +159,53 @@ test_that("NA values in the matrix do not poison the call", {
   expect_false(is.na(r$qc_score))
 })
 
-test_that("symbol detection refuses rather than guessing between mammals", {
-  # Regression: quail's 5-gene W panel once let a few coincidental matches beat
-  # human. The deeper problem is that X-linked symbols are conserved — human
-  # symbols score 0.44 against naked mole-rat — so no mammal is separable this
-  # way. Refusing is correct; a wrong species invalidates every call after it.
+panel_symbols <- function(sp) {
   p <- SexPanels()
-  human_symbols <- p$gene_name[
-    p$scientific_name == "Homo sapiens" & nzchar(p$gene_name)
-  ]
-  d <- DetectSpecies(head(human_symbols, 300))
-  expect_null(d$species)
-  expect_equal(d$method, "ambiguous")
+  unique(p$gene_name[p$scientific_name == sp & nzchar(p$gene_name)])
+}
+
+test_that("symbol-only human and mouse matrices are detected", {
+  # symbol-only GEO deposits such as GSE229169
+  d <- DetectSpecies(c(panel_symbols("Homo sapiens"), sprintf("GENE%04d", 1:500)))
+  expect_equal(
+    d[c("species", "method", "confidence")],
+    list(species = "Homo sapiens", method = "symbol", confidence = "medium")
+  )
+  d <- DetectSpecies(panel_symbols("Mus musculus"))
+  expect_equal(d$species, "Mus musculus")
+})
+
+test_that("near-tied primates are scored but flagged, not called high", {
+  # primate references reuse human symbols, so shared symbols tie
+  shared <- Reduce(intersect, lapply(
+    c("Homo sapiens", "Macaca mulatta", "Pan troglodytes"), panel_symbols
+  ))
+  d <- DetectSpecies(shared)
+  expect_equal(d$confidence, "low")
+  expect_true(all(c("Homo sapiens", "Macaca mulatta") %in% d$candidates))
+
+  y <- intersect(c("DDX3Y", "KDM5D", "EIF1AY", "UTY"), shared)
+  m <- matrix(100, length(shared) + 1L, 1, dimnames = list(c(shared, "FILLER"), "s"))
+  m[y, ] <- 50
+  m["FILLER", ] <- 1e5
+  r <- EstimateSex(m)
+  expect_equal(r$verdict, "male")
+  expect_equal(r$confidence, "medium")
+  expect_match(r$flags, "species_uncertain")
+})
+
+test_that("PanelFor accepts common names", {
+  expect_identical(PanelFor("human"), PanelFor("Homo sapiens"))
+  expect_error(PanelFor("unicorn"), "No panel")
+})
+
+test_that("MatrixMarket reader matches readMM", {
+  skip_if_not_installed("data.table")
+  f <- tempfile(fileext = ".mtx")
+  m <- Matrix::sparseMatrix(i = c(1, 3, 2), j = c(1, 1, 2), x = c(5, 2, 7), dims = c(3, 2))
+  Matrix::writeMM(m, f)
+  expect_equal(as.matrix(SexSeek:::.read_mtx(f)), as.matrix(Matrix::readMM(f)))
+  unlink(f)
 })
 
 test_that("identifiers still detect cleanly where symbols cannot", {

@@ -2,7 +2,7 @@
 % Please edit documentation in R/compare.R
 \name{SummariseComparison}
 \alias{SummariseComparison}
-\title{Count agreements with recorded sex}
+\title{Count the calls that agree with the recorded sex}
 \usage{
 SummariseComparison(x)
 }
@@ -10,11 +10,12 @@ SummariseComparison(x)
 \item{x}{Output of \code{\link[=CompareSex]{CompareSex()}}, or a named list of them.}
 }
 \value{
-One row per comparison: \code{samples}, and how many calls \code{agree},
-\code{disagree} or \code{abstain} (including samples with no usable recorded sex).
+One row for each comparison, with \code{samples} and the number of calls
+in \code{agree}, \code{disagree} and \code{abstain}. \code{abstain} also counts samples with no
+usable recorded sex.
 }
 \description{
-Count agreements with recorded sex
+Count the calls that agree with the recorded sex
 }
 \examples{
 ex <- ExampleData("rat_bulk")
